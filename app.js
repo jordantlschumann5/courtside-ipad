@@ -1,7 +1,7 @@
-import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel } from './core.js?v=5';
-import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=5';
-import { buildOverview } from './overview.js?v=5';
-import { listGames, putGame } from './storage.js?v=5';
+import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel } from './core.js?v=6';
+import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=6';
+import { buildOverview } from './overview.js?v=6';
+import { listGames, putGame } from './storage.js?v=6';
 
 const root = document.querySelector('#app');
 const ui = { game: null, games: [], activeTeam: 'home', section: 1, view: 'board', overviewTeam: 'home', overviewSection: 'all', overviewQuery: '', overviewRecorded: false, selectedPlay: null, dialog: null, filter: 'all', historyTeam: 'all', historyType: 'all', pendingSetup: null, notice: '', busy: false, storageError: false };
