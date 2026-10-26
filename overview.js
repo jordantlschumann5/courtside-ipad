@@ -1,4 +1,4 @@
-import { OUTCOMES, activeEvents } from './core.js?v=6';
+import { OUTCOMES, activeEvents } from './core.js?v=7';
 
 const outcomeIds = OUTCOMES.map(item => item.id);
 const freshCounts = () => Object.fromEntries(outcomeIds.map(id => [id, 0]));

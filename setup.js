@@ -1,4 +1,4 @@
-import { blankDirectSections, blankSectionNames, seedPlaybook } from './core.js?v=6';
+import { blankDirectSections, blankSectionNames, seedPlaybook } from './core.js?v=7';
 
 export const SETUP_COLUMNS = ['kind', 'team', 'section', 'category', 'play', 'number', 'name'];
 const clean = value => String(value ?? '').trim();

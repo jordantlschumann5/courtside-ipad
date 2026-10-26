@@ -1,7 +1,8 @@
-import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel } from './core.js?v=6';
-import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=6';
-import { buildOverview } from './overview.js?v=6';
-import { listGames, putGame } from './storage.js?v=6';
+import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel } from './core.js?v=7';
+import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=7';
+import { buildOverview } from './overview.js?v=7';
+import { listGames, putGame } from './storage.js?v=7';
+import { pointsPerPossession } from './calculator.js?v=7';
 
 const root = document.querySelector('#app');
 const ui = { game: null, games: [], activeTeam: 'home', section: 1, view: 'board', overviewTeam: 'home', overviewSection: 'all', overviewQuery: '', overviewRecorded: false, selectedPlay: null, dialog: null, filter: 'all', historyTeam: 'all', historyType: 'all', pendingSetup: null, notice: '', busy: false, storageError: false };
@@ -127,7 +128,7 @@ function renderGame() {
   const game = ui.game, total = totals(game), entries = activeEvents(game);
   return `<header class="app-header"><div class="brand"><span class="brand-mark">C</span><div><span class="brand-name">COURTSIDE</span><small>OFFLINE GAME TRACKER</small></div></div>
     <div class="game-heading"><label class="sr-only" for="game-picker">Game</label><select id="game-picker" data-action="switch-game">${ui.games.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(item => `<option value="${item.id}" ${item.id === game.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><button class="header-add" data-action="new-game" title="New game">＋</button></div>
-    <div class="header-actions"><span class="local-badge"><span class="local-dot"></span>Saved locally</span><button data-action="show-board" class="header-button ${ui.view === 'board' ? 'selected' : ''}">Board</button><button data-action="show-overview" class="header-button ${ui.view === 'overview' ? 'selected' : ''}">Overview</button><button data-action="show-history" class="header-button ${ui.view === 'history' ? 'selected' : ''}">Entries (${entries.length})</button><button data-action="setup" class="header-button">Setup file</button><button data-action="export" class="header-button">Export</button><button data-action="more" class="header-button">More</button></div>
+    <div class="header-actions"><span class="local-badge"><span class="local-dot"></span>Saved locally</span><button data-action="show-board" class="header-button ${ui.view === 'board' ? 'selected' : ''}">Board</button><button data-action="show-overview" class="header-button ${ui.view === 'overview' ? 'selected' : ''}">Overview</button><button data-action="show-history" class="header-button ${ui.view === 'history' ? 'selected' : ''}">Entries (${entries.length})</button><button data-action="calculator" class="header-button">PPP Calc</button><button data-action="setup" class="header-button">Setup file</button><button data-action="export" class="header-button">Export</button><button data-action="more" class="header-button">More</button></div>
   </header>
   ${ui.view === 'history' ? historyPage(game) : ui.view === 'overview' ? overviewPage(game) : `
   <main class="main-content"><div class="game-meta"><div><span class="section-eyebrow">${esc(game.date)} · ${entries.length} ENTRIES</span><h1>${esc(game.name)}</h1></div><div class="quarter-wrap"><span>Recording in</span><div class="quarter-group">${[1,2,3,4].map(number => `<button data-action="quarter" data-quarter="${number}" class="${game.quarter === number ? 'active' : ''}">Q${number}</button>`).join('')}</div></div></div>
@@ -150,6 +151,7 @@ function renderDialog() {
     return `<div class="modal-backdrop" data-action="close-modal"><section class="modal result-modal" role="dialog" aria-modal="true" aria-label="Choose play result"><div class="modal-head"><div><span class="section-eyebrow">${esc(teamName(ui.game, ui.activeTeam))}${category ? ` · ${esc(category.name)}` : ''}</span><h2>${esc(play.name)}</h2><p>Tap one result. It will be saved immediately.</p></div><button class="close" data-action="close-modal" aria-label="Close">×</button></div><div class="outcome-grid">${OUTCOMES.map(item => `<button class="outcome ${item.id.includes('make') ? 'positive' : item.id.includes('turnover') ? 'negative' : ''}" data-action="record-play" data-outcome="${item.id}"><span>${esc(item.short)}</span><small>${ui.game.successOutcomes.includes(item.id) ? '✓ Success' : 'Recorded result'}</small></button>`).join('')}</div></section></div>`;
   }
   if (d?.type === 'new-game') return `<div class="modal-backdrop" data-action="close-modal"><section class="modal form-modal" role="dialog" aria-modal="true" aria-label="Create game"><div class="modal-head"><div><span class="section-eyebrow">NEW GAME</span><h2>Start with a blank sheet</h2></div><button class="close" data-action="close-modal">×</button></div><form id="new-game-form"><label>Game name<input name="name" placeholder="e.g. Falcons vs. Tigers · Oct 22" required maxlength="90" autofocus></label><div class="form-columns"><label>Team A<input name="home" value="Our Team" required maxlength="60"></label><label>Team B<input name="away" value="Opponent" required maxlength="60"></label></div><p class="form-help">Both rosters and playbooks start empty. After creating the game, upload one setup CSV for both teams or add players and plays manually. No prior game data is copied.</p><div class="modal-actions"><button type="button" class="subtle" data-action="close-modal">Cancel</button><button class="primary">Create blank game</button></div></form></section></div>`;
+  if (d?.type === 'calculator') return `<div class="modal-backdrop" data-action="close-modal"><section class="modal form-modal ppp-modal" role="dialog" aria-modal="true" aria-labelledby="ppp-title"><div class="modal-head"><div><span class="section-eyebrow">QUICK CALCULATOR</span><h2 id="ppp-title">Points per Possession</h2><p>Enter the box-score values below. These values are temporary and are not saved to the game.</p></div><button class="close" data-action="close-modal" aria-label="Close calculator">×</button></div><div class="ppp-fields"><label>Points<input data-ppp-field="points" type="number" inputmode="decimal" min="0" step="any" placeholder="—"></label><label>FGA<input data-ppp-field="fga" type="number" inputmode="numeric" min="0" step="1" placeholder="—"></label><label>OREB<input data-ppp-field="oreb" type="number" inputmode="numeric" min="0" step="1" placeholder="—"></label><label>TO<input data-ppp-field="turnovers" type="number" inputmode="numeric" min="0" step="1" placeholder="—"></label><label>FTA<input data-ppp-field="fta" type="number" inputmode="numeric" min="0" step="1" placeholder="—"></label></div><div class="ppp-result" aria-live="polite"><span>POINTS PER POSSESSION</span><strong id="ppp-value">—</strong><small id="ppp-detail">Fill in all five values to calculate.</small></div><p class="ppp-equation">Points ÷ (FGA − OREB + TO + 0.44 × FTA)</p></section></div>`;
   if (d?.type === 'player') {
     const player = findPlayer(ui.game, d.team, d.player), p = totals(ui.game).players[d.player] || { fouls: 0, ftMade: 0, ftAttempts: 0 };
     if (!player) return '';
@@ -213,6 +215,7 @@ async function handleAction(target) {
   if (action === 'import') { document.querySelector('#backup-input').click(); return; }
   if (action === 'export') return exportGame();
   if (action === 'export-csv') return exportCsv();
+  if (action === 'calculator') { ui.dialog = { type: 'calculator' }; ui.selectedPlay = null; render(); return; }
   if (!game) return;
   if (action === 'show-overview') { ui.view = 'overview'; ui.selectedPlay = null; ui.dialog = null; render(); return; }
   if (action === 'show-history') { ui.view = 'history'; ui.selectedPlay = null; ui.dialog = null; render(); return; }
@@ -288,6 +291,14 @@ root.addEventListener('change', async event => {
 });
 
 root.addEventListener('input', event => {
+  if (event.target.matches('[data-ppp-field]')) {
+    const values = Object.fromEntries([...document.querySelectorAll('[data-ppp-field]')].map(input => [input.dataset.pppField, input.value]));
+    const result = pointsPerPossession(values), value = document.querySelector('#ppp-value'), detail = document.querySelector('#ppp-detail');
+    if (!result) { value.textContent = '—'; detail.textContent = 'Fill in all five values with non-negative numbers.'; }
+    else if (result.ppp === null) { value.textContent = '—'; detail.textContent = 'Estimated possessions must be greater than zero.'; }
+    else { value.textContent = result.ppp.toFixed(2); detail.textContent = `${result.possessions.toFixed(2)} estimated possessions`; }
+    return;
+  }
   if (event.target.id !== 'overview-search') return;
   ui.overviewQuery = event.target.value;
   render();
