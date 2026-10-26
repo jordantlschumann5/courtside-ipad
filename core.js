@@ -90,13 +90,18 @@ export function teamFouls(game, teamId, quarter = 'all') {
 }
 
 export function totals(game) {
-  const teams = { home: { timeouts: 0, ftMade: 0, ftAttempts: 0, fouls: 0 }, away: { timeouts: 0, ftMade: 0, ftAttempts: 0, fouls: 0 } };
+  const teams = { home: { timeouts: 0, timeouts30: 0, timeouts60: 0, timeoutsUnclassified: 0, ftMade: 0, ftAttempts: 0, fouls: 0 }, away: { timeouts: 0, timeouts30: 0, timeouts60: 0, timeoutsUnclassified: 0, ftMade: 0, ftAttempts: 0, fouls: 0 } };
   const players = {};
   const plays = {};
   for (const event of activeEvents(game)) {
     const team = teams[event.team];
     if (!team) continue;
-    if (event.type === 'timeout') team.timeouts += event.delta;
+    if (event.type === 'timeout') {
+      team.timeouts += event.delta;
+      if (event.duration === 30) team.timeouts30 += event.delta;
+      else if (event.duration === 60) team.timeouts60 += event.delta;
+      else team.timeoutsUnclassified += event.delta;
+    }
     if (event.type === 'foul') {
       team.fouls += event.delta;
       const player = players[event.playerId] ||= { fouls: 0, ftMade: 0, ftAttempts: 0 };
@@ -123,7 +128,13 @@ export function totals(game) {
 
 export function canAdjust(game, data) {
   const t = totals(game);
-  if (data.type === 'timeout') return t.teams[data.team].timeouts + data.delta >= 0;
+  if (data.type === 'timeout') {
+    if (data.duration === 30 || data.duration === 60) {
+      const count = t.teams[data.team][`timeouts${data.duration}`] || 0, limit = data.duration === 30 ? 3 : 1;
+      return count + data.delta >= 0 && count + data.delta <= limit;
+    }
+    return t.teams[data.team].timeouts + data.delta >= 0;
+  }
   if (data.type === 'foul') return (t.players[data.playerId]?.fouls || 0) + data.delta >= 0;
   if (data.type === 'ft') {
     const player = t.players[data.playerId] || { ftMade: 0, ftAttempts: 0 };
@@ -136,7 +147,7 @@ export function canAdjust(game, data) {
 export function eventLabel(event) {
   if (event.type === 'play') return `${event.categoryName} / ${event.playName} → ${OUTCOMES.find(x => x.id === event.outcome)?.label || event.outcome}`;
   if (event.type === 'extra') return `Extra · ${event.text}`;
-  if (event.type === 'timeout') return `Timeout ${event.delta > 0 ? '+' : '−'}1`;
+  if (event.type === 'timeout') return `${event.duration ? `${event.duration}-second ` : ''}Timeout ${event.delta > 0 ? '+' : '−'}1`;
   if (event.type === 'foul') return `${event.playerName} · foul ${event.delta > 0 ? '+' : '−'}1`;
   if (event.type === 'ft') return `${event.playerName} · FT ${event.made >= 0 ? '+' : ''}${event.made} made / ${event.attempted >= 0 ? '+' : ''}${event.attempted} attempted`;
   return event.type;

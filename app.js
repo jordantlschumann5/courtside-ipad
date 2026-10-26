@@ -1,8 +1,8 @@
-import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=8';
-import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=8';
-import { buildOverview } from './overview.js?v=8';
-import { listGames, putGame } from './storage.js?v=8';
-import { pointsPerPossession } from './calculator.js?v=8';
+import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=9';
+import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=9';
+import { buildOverview } from './overview.js?v=9';
+import { listGames, putGame } from './storage.js?v=9';
+import { pointsPerPossession } from './calculator.js?v=9';
 
 const root = document.querySelector('#app');
 const ui = { game: null, games: [], activeTeam: 'home', section: 1, view: 'board', overviewTeam: 'home', overviewSection: 'all', overviewQuery: '', overviewOutcome: 'all', overviewSort: 'category', overviewRecorded: false, selectedPlay: null, dialog: null, filter: 'all', historyTeam: 'all', historyType: 'all', pendingSetup: null, notice: '', busy: false, storageError: false };
@@ -62,7 +62,7 @@ function teamCard(game, key, total) {
       <button class="subtle small" data-action="edit-roster" data-team="${key}">Edit roster</button>
     </div>
     <div class="team-metrics">
-      <div class="metric"><span>Timeouts used</span><div class="metric-controls"><button data-action="timeout" data-team="${key}" data-delta="-1" aria-label="Remove ${esc(team.name)} timeout">−</button><strong>${stats.timeouts}</strong><button data-action="timeout" data-team="${key}" data-delta="1" aria-label="Add ${esc(team.name)} timeout">+</button></div></div>
+      <div class="metric timeout-metric"><span>Timeouts</span><div class="timeout-controls">${[[30,stats.timeouts30,3],[60,stats.timeouts60,1]].map(([duration,count,limit]) => `<div class="timeout-type"><span>${duration} sec</span><div class="metric-controls"><button data-action="timeout" data-team="${key}" data-duration="${duration}" data-delta="-1" aria-label="Remove ${duration}-second timeout for ${esc(team.name)}" ${count <= 0 ? 'disabled' : ''}>−</button><strong>${count}/${limit}</strong><button data-action="timeout" data-team="${key}" data-duration="${duration}" data-delta="1" aria-label="Add ${duration}-second timeout for ${esc(team.name)}" ${count >= limit ? 'disabled' : ''}>+</button></div></div>`).join('')}</div>${stats.timeoutsUnclassified ? `<small class="timeout-legacy" title="Earlier timeout entries did not specify a duration">Older unclassified: ${stats.timeoutsUnclassified}</small>` : ''}</div>
       <div class="metric"><span>Team fouls · ${ui.filter === 'all' ? 'Game' : `Q${ui.filter}`}</span><strong>${teamFouls(game, key, ui.filter)}</strong></div>
       <div class="metric"><span>Free throws</span><strong>${stats.ftMade}–${stats.ftAttempts}</strong></div>
     </div>
@@ -203,7 +203,7 @@ function render() {
 
 function download(filename, content, mime) { const blob = new Blob([content], { type: mime }), url = URL.createObjectURL(blob), anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; document.body.append(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); }
 function exportGame() { if (!ui.game) return; download(`courtside-${ui.game.date}-${ui.game.id.slice(0, 8)}.json`, JSON.stringify({ format: 'courtside-backup', version: 1, exportedAt: new Date().toISOString(), game: ui.game }, null, 2), 'application/json'); flash('Backup downloaded. Save a copy outside this iPad.'); }
-function exportCsv() { if (!ui.game) return; const fields = ['id', 'at', 'quarter', 'team', 'type', 'categoryName', 'playName', 'outcome', 'text', 'playerName', 'delta', 'made', 'attempted', 'voided']; const voided = new Set(ui.game.voidedEventIds); const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`; const rows = [fields.join(','), ...ui.game.events.map(event => fields.map(field => quote(field === 'team' ? event.teamName || teamName(ui.game, event.team) : field === 'voided' ? voided.has(event.id) : event[field])).join(','))]; download(`courtside-${ui.game.date}-events.csv`, rows.join('\r\n'), 'text/csv'); flash('CSV event log downloaded.'); }
+function exportCsv() { if (!ui.game) return; const fields = ['id', 'at', 'quarter', 'team', 'type', 'duration', 'categoryName', 'playName', 'outcome', 'text', 'playerName', 'delta', 'made', 'attempted', 'voided']; const voided = new Set(ui.game.voidedEventIds); const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`; const rows = [fields.join(','), ...ui.game.events.map(event => fields.map(field => quote(field === 'team' ? event.teamName || teamName(ui.game, event.team) : field === 'voided' ? voided.has(event.id) : event[field])).join(','))]; download(`courtside-${ui.game.date}-events.csv`, rows.join('\r\n'), 'text/csv'); flash('CSV event log downloaded.'); }
 
 async function importGame(file) {
   if (!file) return;
@@ -262,9 +262,9 @@ async function handleAction(target) {
     ui.selectedPlay = null; render(); return;
   }
   if (action === 'timeout') {
-    const team = target.dataset.team, delta = Number(target.dataset.delta), data = { type: 'timeout', team, delta };
-    if (!canAdjust(game, data)) return flash('Timeouts cannot go below zero.');
-    await commit(next => addEvent(next, data), `${teamName(game, team)} timeout ${delta > 0 ? 'added' : 'removed'}`); return;
+    const team = target.dataset.team, delta = Number(target.dataset.delta), duration = target.dataset.duration ? Number(target.dataset.duration) : undefined, data = { type: 'timeout', team, delta, ...(duration ? { duration } : {}) };
+    if (!canAdjust(game, data)) return flash(duration === 30 ? '30-second timeout limit is 3.' : duration === 60 ? '60-second timeout limit is 1.' : 'Timeouts cannot go below zero.');
+    await commit(next => addEvent(next, data), `${teamName(game, team)} ${duration}-second timeout ${delta > 0 ? 'added' : 'removed'}`); return;
   }
   if (action === 'player-foul' || action === 'player-ft') {
     const { team, player: playerId } = ui.dialog || {}, player = findPlayer(game, team, playerId); if (!player) return;

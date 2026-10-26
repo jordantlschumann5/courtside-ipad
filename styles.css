@@ -75,3 +75,14 @@
 @media(max-width:700px){.player-chip{min-height:58px}.player-chip-stats{width:100%}.player-foul-count strong{font-size:22px}.overview-outcome-totals{padding:10px}.overview-outcome-heading{align-items:flex-start;flex-direction:column;gap:5px}.overview-outcome-tiles{grid-template-columns:repeat(2,minmax(0,1fr))}.overview-outcome-tiles button{padding:8px}.overview-outcome-tiles span{font-size:9px}}
 .ppp-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ppp-fields label{display:flex;flex-direction:column;gap:6px;color:#36536e;font-size:12px;font-weight:800}.ppp-fields label:first-child{grid-column:1/-1}.ppp-fields input{width:100%;min-height:48px;border:1px solid #aebfcd;border-radius:8px;padding:11px 12px;color:#102b4c;background:#fbfdff;font-size:18px;font-weight:700}.ppp-result{margin-top:17px;padding:15px 17px;border:1px solid #c5d4e0;border-left:4px solid #d4a727;border-radius:9px;background:#f3f7fa;display:grid;grid-template-columns:1fr auto;align-items:center;gap:5px 12px}.ppp-result>span{font-size:9px;font-weight:800;letter-spacing:.12em;color:#627e97}.ppp-result strong{grid-column:2;grid-row:1/3;color:#123e68;font-family:'Barlow Condensed',Arial,sans-serif;font-size:42px;line-height:1}.ppp-result small{color:#637c93;font-size:11px}.ppp-equation{margin:12px 0 0;text-align:center;color:#496883;font-size:12px;font-weight:700}
 @media(max-width:400px){.ppp-fields{gap:9px}.ppp-fields input{font-size:16px}.ppp-result strong{font-size:36px}}
+
+/* Separate the three 30-second and one 60-second timeout allotments. */
+.timeout-metric{align-items:stretch;flex-direction:column;justify-content:flex-start;gap:5px;padding:7px 9px}
+.timeout-controls{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.timeout-type{display:flex;align-items:center;justify-content:space-between;gap:4px;min-width:0;background:#fff;border-radius:6px;padding:3px 5px}
+.timeout-type>span{font-size:10px;font-weight:800;color:#55718d;white-space:nowrap}
+.timeout-type .metric-controls{gap:3px}
+.timeout-type .metric-controls button{width:24px;height:24px;font-size:16px}
+.timeout-type .metric-controls strong{min-width:25px;font-size:12px}
+.timeout-legacy{font-size:9px;color:#6f8192;line-height:1.2}
+@media(max-width:700px){.timeout-controls{gap:4px}.timeout-type{padding:3px}.timeout-type>span{font-size:9px}.timeout-type .metric-controls{gap:2px}.timeout-type .metric-controls button{width:22px;height:22px}}
