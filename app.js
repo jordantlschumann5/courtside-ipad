@@ -1,11 +1,11 @@
-import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel } from './core.js?v=7';
-import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=7';
-import { buildOverview } from './overview.js?v=7';
-import { listGames, putGame } from './storage.js?v=7';
-import { pointsPerPossession } from './calculator.js?v=7';
+import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=8';
+import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=8';
+import { buildOverview } from './overview.js?v=8';
+import { listGames, putGame } from './storage.js?v=8';
+import { pointsPerPossession } from './calculator.js?v=8';
 
 const root = document.querySelector('#app');
-const ui = { game: null, games: [], activeTeam: 'home', section: 1, view: 'board', overviewTeam: 'home', overviewSection: 'all', overviewQuery: '', overviewRecorded: false, selectedPlay: null, dialog: null, filter: 'all', historyTeam: 'all', historyType: 'all', pendingSetup: null, notice: '', busy: false, storageError: false };
+const ui = { game: null, games: [], activeTeam: 'home', section: 1, view: 'board', overviewTeam: 'home', overviewSection: 'all', overviewQuery: '', overviewOutcome: 'all', overviewSort: 'category', overviewRecorded: false, selectedPlay: null, dialog: null, filter: 'all', historyTeam: 'all', historyType: 'all', pendingSetup: null, notice: '', busy: false, storageError: false };
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const id = () => crypto.randomUUID();
 const outcome = code => OUTCOMES.find(item => item.id === code);
@@ -63,12 +63,12 @@ function teamCard(game, key, total) {
     </div>
     <div class="team-metrics">
       <div class="metric"><span>Timeouts used</span><div class="metric-controls"><button data-action="timeout" data-team="${key}" data-delta="-1" aria-label="Remove ${esc(team.name)} timeout">−</button><strong>${stats.timeouts}</strong><button data-action="timeout" data-team="${key}" data-delta="1" aria-label="Add ${esc(team.name)} timeout">+</button></div></div>
-      <div class="metric"><span>Team fouls</span><strong>${stats.fouls}</strong></div>
+      <div class="metric"><span>Team fouls · ${ui.filter === 'all' ? 'Game' : `Q${ui.filter}`}</span><strong>${teamFouls(game, key, ui.filter)}</strong></div>
       <div class="metric"><span>Free throws</span><strong>${stats.ftMade}–${stats.ftAttempts}</strong></div>
     </div>
     <div class="roster-strip">${team.players.length ? team.players.map(player => {
       const p = total.players[player.id] || { fouls: 0, ftMade: 0, ftAttempts: 0 };
-      return `<button class="player-chip" data-action="player" data-team="${key}" data-player="${player.id}" title="Edit fouls and free throws"><span class="jersey">${esc(player.number || '—')}</span><span class="player-name">${esc(player.name)}</span><small>PF ${p.fouls} <i>·</i> FT ${p.ftMade}–${p.ftAttempts}</small></button>`;
+      return `<button class="player-chip" data-action="player" data-team="${key}" data-player="${player.id}" title="Edit fouls and free throws"><span class="jersey">${esc(player.number || '—')}</span><span class="player-name">${esc(player.name)}</span><span class="player-chip-stats"><span class="player-foul-count"><b>PF</b><strong>${p.fouls}</strong></span><small>FT ${p.ftMade}–${p.ftAttempts}</small></span></button>`;
     }).join('') : `<button class="empty-roster" data-action="edit-roster" data-team="${key}">+ Add players to ${esc(team.name)}</button>`}</div>
   </section>`;
 }
@@ -110,7 +110,13 @@ function historyPage(game) {
 }
 
 function overviewPage(game) {
-  const teams = buildOverview(game, { team: ui.overviewTeam, quarter: ui.filter, section: ui.overviewSection, query: ui.overviewQuery, recordedOnly: ui.overviewRecorded });
+  const teams = buildOverview(game, { team: ui.overviewTeam, quarter: ui.filter, section: ui.overviewSection, query: ui.overviewQuery, outcome: ui.overviewOutcome, sort: ui.overviewSort, recordedOnly: ui.overviewRecorded });
+  const resultGroups = [
+    ['made-2', '2-point makes', ['2_make_assist', '2_make_solo']], ['missed-2', '2-point misses', ['2_miss_open', '2_miss_contested']],
+    ['made-3', '3-point makes', ['3_make_assist', '3_make_solo']], ['missed-3', '3-point misses', ['3_miss_open', '3_miss_contested']],
+    ['turnover', 'Turnovers', ['forced_turnover', 'unintentional_turnover']], ['foul', 'Fouls earned', ['earned_foul', 'lucky_foul']],
+  ];
+  const resultTotals = Object.fromEntries(resultGroups.map(([key,,ids]) => [key, activeEvents(game).filter(event => event.type === 'play' && (ui.overviewTeam === 'all' || event.team === ui.overviewTeam) && (ui.filter === 'all' || event.quarter === Number(ui.filter))).reduce((sum,event) => sum + Number(ids.includes(event.outcome)),0)]));
   const shots = [
     ['2M', ['2_make_assist', '2_make_solo']], ['2 miss', ['2_miss_open', '2_miss_contested']],
     ['3M', ['3_make_assist', '3_make_solo']], ['3 miss', ['3_miss_open', '3_miss_contested']],
@@ -118,7 +124,8 @@ function overviewPage(game) {
   ];
   const statCard = play => `<details class="overview-play"><summary><span class="overview-play-name"><b>${esc(play.name)}</b>${play.archived ? '<small>Past play</small>' : ''}</span><span class="overview-figures"><strong>${play.calls}<small>${play.calls === 1 ? 'call' : 'calls'}</small></strong><strong>${play.calls ? Math.round(play.successes / play.calls * 100) : 0}%<small>success</small></strong><strong>${play.points}<small>points</small></strong></span><span class="overview-chevron" aria-hidden="true">⌄</span></summary><div class="overview-detail"><div class="overview-outcome-summary">${shots.map(([label, keys]) => `<div><span>${label}</span><b>${keys.reduce((sum, key) => sum + (play.outcomes[key] || 0), 0)}</b></div>`).join('')}</div><div class="overview-outcomes">${OUTCOMES.map(item => `<div><span>${esc(item.label)}</span><strong>${play.outcomes[item.id] || 0}</strong></div>`).join('')}</div></div></details>`;
   return `<main class="main-content overview-page"><div class="history-title"><div><span class="section-eyebrow">PLAY RESULTS</span><h1>${esc(game.name)} · Overview</h1><p>Every play's outcomes, organized by team and category. Tap any play to see the full breakdown.</p></div><button class="primary" data-action="show-board">← Back to board</button></div>
-    <div class="overview-filters"><div class="overview-team-filter segmented" aria-label="Overview team">${[['home',teamName(game,'home')],['away',teamName(game,'away')],['all','Both teams']].map(([value,label]) => `<button data-action="overview-team" data-team="${value}" class="${ui.overviewTeam === value ? 'active' : ''}">${esc(label)}</button>`).join('')}</div><label>Find a play<input id="overview-search" type="search" value="${esc(ui.overviewQuery)}" placeholder="Play or category"></label><label>Section<select id="overview-section"><option value="all">All sections</option>${[1,2,3].map(number => `<option value="${number}" ${ui.overviewSection === String(number) ? 'selected' : ''}>Section ${number}</option>`).join('')}</select></label><label class="overview-check"><input id="overview-recorded" type="checkbox" ${ui.overviewRecorded ? 'checked' : ''}> Recorded only</label></div>
+    <div class="overview-filters"><div class="overview-team-filter segmented" aria-label="Overview team">${[['home',teamName(game,'home')],['away',teamName(game,'away')],['all','Both teams']].map(([value,label]) => `<button data-action="overview-team" data-team="${value}" class="${ui.overviewTeam === value ? 'active' : ''}">${esc(label)}</button>`).join('')}</div><label>Find a play<input id="overview-search" type="search" value="${esc(ui.overviewQuery)}" placeholder="Play or category"></label><label>Section<select id="overview-section"><option value="all">All sections</option>${[1,2,3].map(number => `<option value="${number}" ${ui.overviewSection === String(number) ? 'selected' : ''}>Section ${number}</option>`).join('')}</select></label><label>Sort plays<select id="overview-sort"><option value="category" ${ui.overviewSort === 'category' ? 'selected' : ''}>Category order</option><option value="calls" ${ui.overviewSort === 'calls' ? 'selected' : ''}>Most calls</option><option value="success" ${ui.overviewSort === 'success' ? 'selected' : ''}>Highest success</option></select></label><label class="overview-check"><input id="overview-recorded" type="checkbox" ${ui.overviewRecorded ? 'checked' : ''}> Recorded only</label></div>
+    <section class="overview-outcome-totals"><div class="overview-outcome-heading"><div><span class="section-eyebrow">RESULTS AT A GLANCE</span><strong>${ui.filter === 'all' ? 'Whole game' : `Quarter ${ui.filter}`}</strong></div><small>Counts follow the team and quarter filters. Tap a result type to narrow the play list.</small></div><div class="overview-outcome-tiles"><button data-action="overview-outcome" data-outcome="all" class="${ui.overviewOutcome === 'all' ? 'active' : ''}"><span>All results</span><strong>${Object.values(resultTotals).reduce((sum,count) => sum + count,0)}</strong></button>${resultGroups.map(([key,label]) => `<button data-action="overview-outcome" data-outcome="${key}" class="${ui.overviewOutcome === key ? 'active' : ''}"><span>${label}</span><strong>${resultTotals[key]}</strong></button>`).join('')}</div></section>
     <div class="overview-quarter"><span>Quarter</span><div class="segmented compact"><button data-action="filter" data-filter="all" class="${ui.filter === 'all' ? 'active' : ''}">All</button>${[1,2,3,4].map(number => `<button data-action="filter" data-filter="${number}" class="${ui.filter === String(number) ? 'active' : ''}">Q${number}</button>`).join('')}</div></div>
     ${teams.map(team => `<section class="overview-team"><div class="overview-team-title"><h2>${esc(team.name)}</h2><span>${team.calls} ${team.calls === 1 ? 'call' : 'calls'} in view · ${team.calls ? Math.round(team.successes / team.calls * 100) : 0}% success</span></div>${team.groups.length ? team.groups.map(group => `<section class="overview-category"><div class="overview-category-title"><div><small>${group.section ? esc(game.sectionNames?.[team.id]?.[group.section] || `Section ${group.section}`) : 'PAST PLAY'}</small><h3>${esc(group.categoryName)}</h3></div><span>${group.plays.length} ${group.plays.length === 1 ? 'play' : 'plays'}</span></div><div class="overview-play-list">${group.plays.map(statCard).join('')}</div></section>`).join('') : '<div class="overview-empty">No plays match these filters. Choose another team, section, or quarter—or turn off “Recorded only.”</div>'}</section>`).join('')}
     <footer>Success uses the current rule; changing the rule recalculates these rates without changing recorded results.</footer></main>`;
@@ -221,6 +228,7 @@ async function handleAction(target) {
   if (action === 'show-history') { ui.view = 'history'; ui.selectedPlay = null; ui.dialog = null; render(); return; }
   if (action === 'show-board') { ui.view = 'board'; ui.dialog = null; render(); return; }
   if (action === 'overview-team') { ui.overviewTeam = target.dataset.team; render(); return; }
+  if (action === 'overview-outcome') { ui.overviewOutcome = target.dataset.outcome; render(); return; }
   if (action === 'setup') { ui.pendingSetup = null; ui.dialog = { type: 'setup' }; render(); return; }
   if (action === 'upload-setup') { document.querySelector('#setup-input').click(); return; }
   if (action === 'download-setup' || action === 'download-starter') { download(`courtside-${game.date}-${action === 'download-starter' ? 'starter' : 'setup'}.csv`, setupCSV(game, action === 'download-starter'), 'text/csv;charset=utf-8'); flash('Editable game setup CSV downloaded.'); return; }
@@ -287,6 +295,7 @@ root.addEventListener('change', async event => {
   if (target.id === 'history-team') { ui.historyTeam = target.value; render(); }
   if (target.id === 'history-type') { ui.historyType = target.value; render(); }
   if (target.id === 'overview-section') { ui.overviewSection = target.value; render(); }
+  if (target.id === 'overview-sort') { ui.overviewSort = target.value; render(); }
   if (target.id === 'overview-recorded') { ui.overviewRecorded = target.checked; render(); }
 });
 

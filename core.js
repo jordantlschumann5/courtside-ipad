@@ -85,6 +85,10 @@ export function activeEvents(game) {
   return game.events.filter(event => !voided.has(event.id));
 }
 
+export function teamFouls(game, teamId, quarter = 'all') {
+  return activeEvents(game).filter(event => event.type === 'foul' && event.team === teamId && (quarter === 'all' || event.quarter === Number(quarter))).reduce((sum, event) => sum + event.delta, 0);
+}
+
 export function totals(game) {
   const teams = { home: { timeouts: 0, ftMade: 0, ftAttempts: 0, fouls: 0 }, away: { timeouts: 0, ftMade: 0, ftAttempts: 0, fouls: 0 } };
   const players = {};
