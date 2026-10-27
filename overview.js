@@ -1,7 +1,6 @@
-import { OUTCOMES, activeEvents } from './core.js?v=9';
+import { activeEvents, gameOutcomes, getOutcome } from './core.js?v=11';
 
-const outcomeIds = OUTCOMES.map(item => item.id);
-const freshCounts = () => Object.fromEntries(outcomeIds.map(id => [id, 0]));
+const freshCounts = game => Object.fromEntries(gameOutcomes(game).map(item => [item.id, 0]));
 const matches = (text, query) => !query || String(text).toLocaleLowerCase().includes(query);
 
 const outcomeFilterIds = {
@@ -20,12 +19,12 @@ export function buildOverview(game, { team = 'all', quarter = 'all', section = '
     const key = `${event.team}:${event.categoryId}:${event.playId}`;
     let item = counts.get(key);
     if (!item) {
-      item = { calls: 0, successes: 0, points: 0, outcomes: freshCounts(), categoryName: event.categoryName, playName: event.playName };
+      item = { calls: 0, successes: 0, points: 0, outcomes: freshCounts(game), categoryName: event.categoryName, playName: event.playName };
       counts.set(key, item);
     }
     item.calls++;
     item.successes += Number(game.successOutcomes.includes(event.outcome));
-    item.points += OUTCOMES.find(outcome => outcome.id === event.outcome)?.points || 0;
+    item.points += getOutcome(game, event.outcome)?.points || 0;
     if (Object.hasOwn(item.outcomes, event.outcome)) item.outcomes[event.outcome]++;
   }
   const teams = [];
@@ -35,7 +34,7 @@ export function buildOverview(game, { team = 'all', quarter = 'all', section = '
     const add = (sectionNo, categoryName, categoryId, playName, playId, archived = false) => {
       const key = `${teamId}:${categoryId}:${playId}`;
       seen.add(key);
-      const stats = counts.get(key) || { calls: 0, successes: 0, points: 0, outcomes: freshCounts() };
+      const stats = counts.get(key) || { calls: 0, successes: 0, points: 0, outcomes: freshCounts(game) };
       if (recordedOnly && !stats.calls) return;
       if (outcome !== 'all' && outcomeFilterIds[outcome] && !outcomeFilterIds[outcome].some(id => stats.outcomes[id])) return;
       if (section !== 'all' && String(sectionNo) !== String(section)) return;
@@ -47,7 +46,7 @@ export function buildOverview(game, { team = 'all', quarter = 'all', section = '
     for (const category of game.playbooks[teamId] || [])
       for (const play of category.plays || []) add(Number(category.section), category.name, category.id, play.name, play.id);
     for (const [name, sectionNo] of Object.entries(game.directSections?.[teamId] || {}))
-      if (sectionNo && name !== 'extra') add(Number(sectionNo), 'Direct actions', `direct:${name}`, name[0].toUpperCase() + name.slice(1), `direct:${name}`);
+      if (sectionNo && name !== 'extra') { const label = game.directNames?.[teamId]?.[name] || name[0].toUpperCase() + name.slice(1); add(Number(sectionNo), 'Direct actions', `direct:${name}`, label, `direct:${name}`); }
     for (const [key, stats] of counts) {
       if (!key.startsWith(`${teamId}:`) || seen.has(key)) continue;
       const source = events.find(event => `${event.team}:${event.categoryId}:${event.playId}` === key);

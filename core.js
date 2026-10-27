@@ -12,6 +12,9 @@ export const OUTCOMES = [
   { id: 'earned_foul', label: 'Earned foul', short: 'Earned Foul', points: 0 },
   { id: 'lucky_foul', label: 'Lucky foul', short: 'Lucky Foul', points: 0 },
 ];
+export const defaultResultOptions = () => OUTCOMES.map(item => ({ ...item, enabled: true }));
+export const gameOutcomes = game => game?.outcomeOptions || OUTCOMES;
+export const getOutcome = (game, code) => gameOutcomes(game).find(item => item.id === code) || OUTCOMES.find(item => item.id === code);
 
 export const DEFAULT_SUCCESS = ['2_make_assist', '2_make_solo', '3_make_assist', '3_make_solo', 'earned_foul'];
 export const DIRECT_ACTIONS = [
@@ -20,7 +23,9 @@ export const DIRECT_ACTIONS = [
   { id: 'extra', name: 'Extra' },
 ];
 export const blankDirectSections = () => ({ drag: null, transition: null, extra: null });
+export const blankDirectNames = () => ({ drag: 'Drag', transition: 'Transition', extra: 'Extra' });
 export const blankSectionNames = () => ({ 1: 'Section 1', 2: 'Section 2', 3: 'Section 3' });
+export const MAX_SECTIONS = 8;
 
 const SEED = [
   ['Point', ['Push', 'Wave Through', 'Come Here', 'Wing Entry', 'DHO', 'Wing DHO']],
@@ -52,8 +57,9 @@ export function newGame({ name = '', home = 'Our Team', away = 'Opponent', succe
     },
     playbooks: { home: [], away: [] },
     directSections: { home: blankDirectSections(), away: blankDirectSections() },
+    directNames: { home: blankDirectNames(), away: blankDirectNames() },
     sectionNames: { home: blankSectionNames(), away: blankSectionNames() },
-    successOutcomes: [...success], events: [], voidedEventIds: [],
+    outcomeOptions: defaultResultOptions(), successOutcomes: [...success], events: [], voidedEventIds: [],
   };
 }
 
@@ -61,7 +67,9 @@ export function normalizeGame(game) {
   if (game?.schema === 2 && game.playbooks?.home && game.playbooks?.away) return {
     ...game,
     directSections: game.directSections || { home: blankDirectSections(), away: blankDirectSections() },
-    sectionNames: game.sectionNames || { home: blankSectionNames(), away: blankSectionNames() },
+    directNames: { home: { ...blankDirectNames(), ...(game.directNames?.home || {}) }, away: { ...blankDirectNames(), ...(game.directNames?.away || {}) } },
+    sectionNames: { home: { ...blankSectionNames(), ...(game.sectionNames?.home || {}) }, away: { ...blankSectionNames(), ...(game.sectionNames?.away || {}) } },
+    outcomeOptions: Array.isArray(game.outcomeOptions) ? game.outcomeOptions : defaultResultOptions(),
   };
   if (game?.schema !== 1 || !Array.isArray(game.playbook)) throw new Error('Unsupported game backup.');
   const old = game.playbook.filter(category => !['drag', 'transition', 'extra'].includes(category.name.toLowerCase()));
@@ -69,7 +77,9 @@ export function normalizeGame(game) {
   return {
     ...game, schema: 2, playbooks: { home: structuredClone(legacy), away: structuredClone(legacy) },
     directSections: { home: { drag: 1, transition: 1, extra: 3 }, away: { drag: 1, transition: 1, extra: 3 } },
+    directNames: { home: blankDirectNames(), away: blankDirectNames() },
     sectionNames: { home: blankSectionNames(), away: blankSectionNames() },
+    outcomeOptions: defaultResultOptions(),
   };
 }
 
@@ -116,9 +126,10 @@ export function totals(game) {
     }
     if (event.type === 'play') {
       const key = `${event.team}:${event.categoryId}:${event.playId}`;
-      const entry = plays[key] ||= { team: event.team, categoryId: event.categoryId, categoryName: event.categoryName, playId: event.playId, playName: event.playName, calls: 0, successes: 0, points: 0, outcomes: Object.fromEntries(OUTCOMES.map(item => [item.id, 0])) };
+      const resultOptions = gameOutcomes(game);
+      const entry = plays[key] ||= { team: event.team, categoryId: event.categoryId, categoryName: event.categoryName, playId: event.playId, playName: event.playName, calls: 0, successes: 0, points: 0, outcomes: Object.fromEntries(resultOptions.map(item => [item.id, 0])) };
       entry.calls++;
-      entry.points += OUTCOMES.find(item => item.id === event.outcome)?.points || 0;
+      entry.points += getOutcome(game, event.outcome)?.points || 0;
       if (game.successOutcomes.includes(event.outcome)) entry.successes++;
       entry.outcomes[event.outcome] = (entry.outcomes[event.outcome] || 0) + 1;
     }
@@ -144,8 +155,8 @@ export function canAdjust(game, data) {
   return true;
 }
 
-export function eventLabel(event) {
-  if (event.type === 'play') return `${event.categoryName} / ${event.playName} → ${OUTCOMES.find(x => x.id === event.outcome)?.label || event.outcome}`;
+export function eventLabel(event, game) {
+  if (event.type === 'play') return `${event.categoryName} / ${event.playName} → ${getOutcome(game, event.outcome)?.label || event.outcome}`;
   if (event.type === 'extra') return `Extra · ${event.text}`;
   if (event.type === 'timeout') return `${event.duration ? `${event.duration}-second ` : ''}Timeout ${event.delta > 0 ? '+' : '−'}1`;
   if (event.type === 'foul') return `${event.playerName} · foul ${event.delta > 0 ? '+' : '−'}1`;
