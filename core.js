@@ -103,6 +103,7 @@ export function totals(game) {
   const teams = { home: { timeouts: 0, timeouts30: 0, timeouts60: 0, timeoutsUnclassified: 0, ftMade: 0, ftAttempts: 0, fouls: 0 }, away: { timeouts: 0, timeouts30: 0, timeouts60: 0, timeoutsUnclassified: 0, ftMade: 0, ftAttempts: 0, fouls: 0 } };
   const players = {};
   const plays = {};
+  const shots = { home: { gold: 0, silver: 0, bronze: 0 }, away: { gold: 0, silver: 0, bronze: 0 } };
   for (const event of activeEvents(game)) {
     const team = teams[event.team];
     if (!team) continue;
@@ -124,6 +125,7 @@ export function totals(game) {
       player.ftMade += event.made;
       player.ftAttempts += event.attempted;
     }
+    if (event.type === 'shot-selection' && shots[event.team]?.[event.medal] !== undefined) shots[event.team][event.medal] += event.delta;
     if (event.type === 'play') {
       const key = `${event.team}:${event.categoryId}:${event.playId}`;
       const resultOptions = gameOutcomes(game);
@@ -134,7 +136,7 @@ export function totals(game) {
       entry.outcomes[event.outcome] = (entry.outcomes[event.outcome] || 0) + 1;
     }
   }
-  return { teams, players, plays };
+  return { teams, players, plays, shots };
 }
 
 export function canAdjust(game, data) {
@@ -152,6 +154,7 @@ export function canAdjust(game, data) {
     const made = player.ftMade + data.made, attempted = player.ftAttempts + data.attempted;
     return made >= 0 && attempted >= 0 && made <= attempted;
   }
+  if (data.type === 'shot-selection') return (t.shots[data.team]?.[data.medal] || 0) + data.delta >= 0;
   return true;
 }
 
@@ -161,5 +164,6 @@ export function eventLabel(event, game) {
   if (event.type === 'timeout') return `${event.duration ? `${event.duration}-second ` : ''}Timeout ${event.delta > 0 ? '+' : '−'}1`;
   if (event.type === 'foul') return `${event.playerName} · foul ${event.delta > 0 ? '+' : '−'}1`;
   if (event.type === 'ft') return `${event.playerName} · FT ${event.made >= 0 ? '+' : ''}${event.made} made / ${event.attempted >= 0 ? '+' : ''}${event.attempted} attempted`;
+  if (event.type === 'shot-selection') return `${event.teamName} · ${event.medal} shot ${event.delta > 0 ? '+1' : '−1'}`;
   return event.type;
 }

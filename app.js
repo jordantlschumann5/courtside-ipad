@@ -1,11 +1,11 @@
-import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, gameOutcomes, getOutcome, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=11';
-import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=11';
-import { buildOverview } from './overview.js?v=11';
-import { listGames, putGame } from './storage.js?v=11';
-import { pointsPerPossession } from './calculator.js?v=11';
+import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, gameOutcomes, getOutcome, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=12';
+import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=12';
+import { buildOverview } from './overview.js?v=12';
+import { listGames, putGame } from './storage.js?v=12';
+import { pointsPerPossession } from './calculator.js?v=12';
 
 const root = document.querySelector('#app');
-const ui = { game: null, games: [], activeTeam: 'home', section: 1, view: 'board', overviewTeam: 'home', overviewSection: 'all', overviewQuery: '', overviewOutcome: 'all', overviewSort: 'category', overviewRecorded: false, selectedPlay: null, dialog: null, filter: 'all', historyTeam: 'all', historyType: 'all', pendingSetup: null, notice: '', busy: false, storageError: false };
+const ui = { game: null, games: [], activeTeam: 'home', shotTeam: 'home', section: 1, view: 'board', overviewTeam: 'home', overviewSection: 'all', overviewQuery: '', overviewOutcome: 'all', overviewSort: 'category', overviewRecorded: false, selectedPlay: null, dialog: null, filter: 'all', historyTeam: 'all', historyType: 'all', pendingSetup: null, notice: '', busy: false, storageError: false };
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const id = () => crypto.randomUUID();
 const outcome = code => getOutcome(ui.game, code);
@@ -106,10 +106,19 @@ function historyPage(game) {
   const entries = all.filter(event => (ui.historyTeam === 'all' || event.team === ui.historyTeam) && (ui.filter === 'all' || event.quarter === Number(ui.filter)) && (ui.historyType === 'all' || event.type === ui.historyType)).reverse();
   const extras = entries.filter(event => event.type === 'extra');
   return `<main class="main-content history-page"><div class="history-title"><div><span class="section-eyebrow">GAME HISTORY</span><h1>${esc(game.name)} · Entries</h1><p>Every saved input has a timestamp and quarter. Extra notes stay separate from play success rates.</p></div><button class="primary" data-action="show-board">← Back to board</button></div>
-    <div class="history-filters"><label>Team<select id="history-team"><option value="all">Both teams</option><option value="home" ${ui.historyTeam === 'home' ? 'selected' : ''}>${esc(teamName(game,'home'))}</option><option value="away" ${ui.historyTeam === 'away' ? 'selected' : ''}>${esc(teamName(game,'away'))}</option></select></label><label>Type<select id="history-type"><option value="all">All entries</option>${[['play','Plays & direct actions'],['extra','Extra notes'],['ft','Free throws'],['foul','Personal fouls'],['timeout','Timeouts']].map(([value,label]) => `<option value="${value}" ${ui.historyType === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label><div class="filter-group"><span>Quarter</span><div class="segmented compact"><button data-action="filter" data-filter="all" class="${ui.filter === 'all' ? 'active' : ''}">All</button>${[1,2,3,4].map(number => `<button data-action="filter" data-filter="${number}" class="${ui.filter === String(number) ? 'active' : ''}">Q${number}</button>`).join('')}</div></div></div>
+    <div class="history-filters"><label>Team<select id="history-team"><option value="all">Both teams</option><option value="home" ${ui.historyTeam === 'home' ? 'selected' : ''}>${esc(teamName(game,'home'))}</option><option value="away" ${ui.historyTeam === 'away' ? 'selected' : ''}>${esc(teamName(game,'away'))}</option></select></label><label>Type<select id="history-type"><option value="all">All entries</option>${[['play','Plays & direct actions'],['extra','Extra notes'],['ft','Free throws'],['foul','Personal fouls'],['timeout','Timeouts'],['shot-selection','Shot selection']].map(([value,label]) => `<option value="${value}" ${ui.historyType === value ? 'selected' : ''}>${label}</option>`).join('')}</select></label><div class="filter-group"><span>Quarter</span><div class="segmented compact"><button data-action="filter" data-filter="all" class="${ui.filter === 'all' ? 'active' : ''}">All</button>${[1,2,3,4].map(number => `<button data-action="filter" data-filter="${number}" class="${ui.filter === String(number) ? 'active' : ''}">Q${number}</button>`).join('')}</div></div></div>
     ${extras.length ? `<section class="extra-history"><span class="section-eyebrow">CUSTOM EXTRA ENTRIES</span><div>${extras.map(event => `<article><strong>${esc(event.text)}</strong><small>${esc(event.teamName || teamName(game,event.team))} · Q${event.quarter} · ${stamp(event.at)}</small></article>`).join('')}</div></section>` : ''}
     <section class="recent"><div class="section-head"><div><span class="section-eyebrow">AUDIT TRAIL</span><h2>${entries.length} matching entries</h2></div><span class="muted">All data is stored on this iPad</span></div><div class="entry-list">${entries.length ? entries.map(event => `<div class="entry"><time>${stamp(event.at)}</time><span class="entry-team">${esc(event.teamName || teamName(game, event.team))}</span><span>${esc(eventLabel(event,game))}</span><b>Q${event.quarter}</b></div>`).join('') : '<p class="muted">No entries match these filters.</p>'}</div></section>
     <footer>Export a JSON backup after the game to preserve the complete history, including Extra notes.</footer></main>`;
+}
+
+function shotTrackerPage(game) {
+  const team = ui.shotTeam, counts = totals(game).shots[team];
+  const medals = [['gold','Gold'],['silver','Silver'],['bronze','Bronze']];
+  return `<main class="main-content shot-tracker-page"><div class="history-title"><div><span class="section-eyebrow">SHOT TRACKER · GAME TOTAL</span><h1>${esc(teamName(game,team))}</h1><p>Record this team’s shot-selection grades. Each change saves automatically on this iPad.</p></div><button class="primary" data-action="show-board">← Back to board</button></div>
+    <div class="shot-tracker-toolbar"><div class="filter-group"><span>Team page</span><div class="segmented shot-team-tabs"><button data-action="shot-team" data-team="home" class="${team==='home'?'active':''}">${esc(teamName(game,'home'))}</button><button data-action="shot-team" data-team="away" class="${team==='away'?'active':''}">${esc(teamName(game,'away'))}</button></div></div><button data-action="undo" class="subtle" ${!activeEvents(game).length?'disabled':''}>↶ Undo last input</button></div>
+    <section class="shot-medal-grid" aria-label="${esc(teamName(game,team))} shot selection totals">${medals.map(([id,label])=>`<article class="shot-medal-card ${id}"><div class="shot-medal-title"><span>${label}</span><small>Shot-selection total</small></div><strong class="shot-count" aria-live="polite">${counts[id]}</strong><div class="shot-stepper"><button data-action="shot-adjust" data-medal="${id}" data-delta="-1" aria-label="Remove one ${label} shot for ${esc(teamName(game,team))}" ${counts[id] <= 0 ? 'disabled' : ''}>−</button><span>${label.toUpperCase()}</span><button data-action="shot-adjust" data-medal="${id}" data-delta="1" aria-label="Add one ${label} shot for ${esc(teamName(game,team))}">+</button></div></article>`).join('')}</section>
+    <footer>Shot-selection changes appear in Entries and the JSON game backup.</footer></main>`;
 }
 
 function overviewPage(game) {
@@ -138,9 +147,9 @@ function renderGame() {
   const game = ui.game, total = totals(game), entries = activeEvents(game);
   return `<header class="app-header"><div class="brand"><span class="brand-mark">C</span><div><span class="brand-name">COURTSIDE</span><small>OFFLINE GAME TRACKER</small></div></div>
     <div class="game-heading"><label class="sr-only" for="game-picker">Game</label><select id="game-picker" data-action="switch-game">${ui.games.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(item => `<option value="${item.id}" ${item.id === game.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><button class="header-add" data-action="new-game" title="New game">＋</button></div>
-    <div class="header-actions"><span class="local-badge"><span class="local-dot"></span>Saved locally</span><button data-action="show-board" class="header-button ${ui.view === 'board' ? 'selected' : ''}">Board</button><button data-action="show-overview" class="header-button ${ui.view === 'overview' ? 'selected' : ''}">Overview</button><button data-action="show-history" class="header-button ${ui.view === 'history' ? 'selected' : ''}">Entries (${entries.length})</button><button data-action="calculator" class="header-button">PPP Calc</button><button data-action="setup" class="header-button">Setup file</button><button data-action="export" class="header-button">Export</button><button data-action="more" class="header-button">More</button></div>
+    <div class="header-actions"><span class="local-badge"><span class="local-dot"></span>Saved locally</span><button data-action="show-board" class="header-button ${ui.view === 'board' ? 'selected' : ''}">Board</button><button data-action="show-overview" class="header-button ${ui.view === 'overview' ? 'selected' : ''}">Overview</button><button data-action="show-history" class="header-button ${ui.view === 'history' ? 'selected' : ''}">Entries (${entries.length})</button><button data-action="show-shots" class="header-button ${ui.view === 'shot-tracker' ? 'selected' : ''}">Shot tracker</button><button data-action="calculator" class="header-button">PPP Calc</button><button data-action="setup" class="header-button">Setup file</button><button data-action="export" class="header-button">Export</button><button data-action="more" class="header-button">More</button></div>
   </header>
-  ${ui.view === 'history' ? historyPage(game) : ui.view === 'overview' ? overviewPage(game) : `
+  ${ui.view === 'history' ? historyPage(game) : ui.view === 'overview' ? overviewPage(game) : ui.view === 'shot-tracker' ? shotTrackerPage(game) : `
   <main class="main-content"><div class="game-meta"><div><span class="section-eyebrow">${esc(game.date)} · ${entries.length} ENTRIES</span><h1>${esc(game.name)}</h1></div><div class="quarter-wrap"><span>Recording in</span><div class="quarter-group">${[1,2,3,4].map(number => `<button data-action="quarter" data-quarter="${number}" class="${game.quarter === number ? 'active' : ''}">Q${number}</button>`).join('')}</div></div></div>
     <div class="team-grid">${teamCard(game, 'home', total)}${teamCard(game, 'away', total)}</div>
     <div class="utility-row"><div class="filter-group"><span>View results</span><div class="segmented compact"><button data-action="filter" data-filter="all" class="${ui.filter === 'all' ? 'active' : ''}">All</button>${[1,2,3,4].map(number => `<button data-action="filter" data-filter="${number}" class="${ui.filter === String(number) ? 'active' : ''}">Q${number}</button>`).join('')}</div></div><div class="utility-actions"><button data-action="undo" class="subtle" ${!entries.length ? 'disabled' : ''}>↶ Undo last input</button><button data-action="rules" class="subtle">Success rules</button></div></div>
@@ -209,7 +218,7 @@ function render() {
 
 function download(filename, content, mime) { const blob = new Blob([content], { type: mime }), url = URL.createObjectURL(blob), anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; document.body.append(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); }
 function exportGame() { if (!ui.game) return; download(`courtside-${ui.game.date}-${ui.game.id.slice(0, 8)}.json`, JSON.stringify({ format: 'courtside-backup', version: 1, exportedAt: new Date().toISOString(), game: ui.game }, null, 2), 'application/json'); flash('Backup downloaded. Save a copy outside this iPad.'); }
-function exportCsv() { if (!ui.game) return; const fields = ['id', 'at', 'quarter', 'team', 'type', 'duration', 'categoryName', 'playName', 'outcome', 'text', 'playerName', 'delta', 'made', 'attempted', 'voided']; const voided = new Set(ui.game.voidedEventIds); const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`; const rows = [fields.join(','), ...ui.game.events.map(event => fields.map(field => quote(field === 'team' ? event.teamName || teamName(ui.game, event.team) : field === 'voided' ? voided.has(event.id) : event[field])).join(','))]; download(`courtside-${ui.game.date}-events.csv`, rows.join('\r\n'), 'text/csv'); flash('CSV event log downloaded.'); }
+function exportCsv() { if (!ui.game) return; const fields = ['id', 'at', 'quarter', 'team', 'type', 'duration', 'categoryName', 'playName', 'outcome', 'medal', 'text', 'playerName', 'delta', 'made', 'attempted', 'voided']; const voided = new Set(ui.game.voidedEventIds); const quote = value => `"${String(value ?? '').replaceAll('"', '""')}"`; const rows = [fields.join(','), ...ui.game.events.map(event => fields.map(field => quote(field === 'team' ? event.teamName || teamName(ui.game, event.team) : field === 'voided' ? voided.has(event.id) : event[field])).join(','))]; download(`courtside-${ui.game.date}-events.csv`, rows.join('\r\n'), 'text/csv'); flash('CSV event log downloaded.'); }
 
 async function importGame(file) {
   if (!file) return;
@@ -232,8 +241,16 @@ async function handleAction(target) {
   if (!game) return;
   if (action === 'show-overview') { ui.view = 'overview'; ui.selectedPlay = null; ui.dialog = null; render(); return; }
   if (action === 'show-history') { ui.view = 'history'; ui.selectedPlay = null; ui.dialog = null; render(); return; }
+  if (action === 'show-shots') { ui.view = 'shot-tracker'; ui.selectedPlay = null; ui.dialog = null; render(); return; }
   if (action === 'show-board') { ui.view = 'board'; ui.dialog = null; render(); return; }
   if (action === 'overview-team') { ui.overviewTeam = target.dataset.team; render(); return; }
+  if (action === 'shot-team') { ui.shotTeam = target.dataset.team; render(); return; }
+  if (action === 'shot-adjust') {
+    const data = { type: 'shot-selection', team: ui.shotTeam, medal: target.dataset.medal, delta: Number(target.dataset.delta) };
+    if (!['gold','silver','bronze'].includes(data.medal) || ![-1,1].includes(data.delta)) return;
+    if (!canAdjust(game, data)) return flash('A shot-selection total cannot go below zero.');
+    await commit(next => addEvent(next, data), `${teamName(game,ui.shotTeam)} · ${data.medal} shot ${data.delta > 0 ? '+1' : '−1'}`); return;
+  }
   if (action === 'overview-outcome') { ui.overviewOutcome = target.dataset.outcome; render(); return; }
   if (action === 'setup') { ui.pendingSetup = null; ui.dialog = { type: 'setup' }; render(); return; }
   if (action === 'upload-setup') { document.querySelector('#setup-input').click(); return; }
