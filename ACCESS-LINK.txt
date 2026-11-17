@@ -1,0 +1,5 @@
+Courtside access link (phone, tablet, or computer):
+https://jordantlschumann5.github.io/courtside-ipad/
+
+For offline iPad use, open in Safari while online and add the page to the Home Screen.
+Game data is stored on each device separately. Export a JSON game backup to transfer it.

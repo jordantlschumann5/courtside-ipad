@@ -1,6 +1,6 @@
-import { blankDirectNames, blankDirectSections, blankSectionNames, defaultResultOptions, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, seedPlaybook } from './core.js?v=11';
+import { blankDirectNames, blankDirectSections, blankSectionNames, defaultResultOptions, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, seedPlaybook, outcomeGroup } from './core.js?v=13';
 
-export const SETUP_COLUMNS = ['kind', 'team', 'section', 'category', 'play', 'number', 'name', 'outcome', 'short', 'points', 'success', 'result_id', 'enabled', 'action_id'];
+export const SETUP_COLUMNS = ['kind', 'team', 'section', 'category', 'play', 'number', 'name', 'outcome', 'short', 'points', 'success', 'result_id', 'enabled', 'action_id', 'counts_as'];
 const clean = value => String(value ?? '').trim();
 const key = value => clean(value).toLocaleLowerCase();
 const validSection = value => Number.isInteger(Number(value)) && Number(value) >= 1 && Number(value) <= MAX_SECTIONS;
@@ -21,6 +21,7 @@ const HEADER_ALIASES = {
   resultId: ['resultid', 'outcomeid', 'id'],
   enabled: ['enabled', 'active', 'shown'],
   actionId: ['actionid', 'directactionid'],
+  countsAs: ['countsas', 'outputtype', 'statcategory', 'resulttype'],
 };
 const headerIndex = (headings, field) => headings.findIndex(value => HEADER_ALIASES[field].includes(headerKey(value)));
 const getCell = (row, index) => index < 0 ? '' : clean(row[index]);
@@ -75,7 +76,7 @@ export function parseSetupCSV(text) {
   rows.forEach((raw, index) => {
     const rowNumber = index + 2;
     const kindRaw = getCell(raw, columns.kind), teamRaw = getCell(raw, columns.team), sectionRaw = getCell(raw, columns.section);
-    const categoryRaw = getCell(raw, columns.category), playRaw = getCell(raw, columns.play), numberRaw = getCell(raw, columns.number), nameRaw = getCell(raw, columns.name), actionRaw = getCell(raw, columns.action), outcomeRaw = getCell(raw, columns.outcome), shortRaw = getCell(raw, columns.short), pointsRaw = getCell(raw, columns.points), successRaw = getCell(raw, columns.success), outcomeIdRaw = getCell(raw, columns.resultId), actionIdRaw = getCell(raw, columns.actionId);
+    const categoryRaw = getCell(raw, columns.category), playRaw = getCell(raw, columns.play), numberRaw = getCell(raw, columns.number), nameRaw = getCell(raw, columns.name), actionRaw = getCell(raw, columns.action), outcomeRaw = getCell(raw, columns.outcome), shortRaw = getCell(raw, columns.short), pointsRaw = getCell(raw, columns.points), successRaw = getCell(raw, columns.success), outcomeIdRaw = getCell(raw, columns.resultId), actionIdRaw = getCell(raw, columns.actionId), countsAsRaw = getCell(raw, columns.countsAs);
     let kind = key(kindRaw).replace(/[\s_-]+/g, ''), team = teamKey(teamRaw);
     if (['direct', 'directaction', 'button'].includes(kind)) kind = 'action';
     if (['group', 'playcategory'].includes(kind)) kind = 'category';
@@ -96,9 +97,10 @@ export function parseSetupCSV(text) {
       const outcomeId = outcomeIdRaw || actionKey(label);
       const points = Number(pointsRaw || 0);
       if (!label || label.length > 80 || !outcomeId || outcomeId.length > 60 || !Number.isFinite(points) || points < 0 || points > 10) throw new Error(`Row ${rowNumber}: result needs a label, optional short label, and points from 0 to 10.`);
+      if(countsAsRaw&&!['two_make','two_miss','three_make','three_miss','turnover','foul','other'].includes(countsAsRaw))throw new Error(`Row ${rowNumber}: counts_as must be a standard output type such as turnover or foul.`);
       result.outcomeOptions ||= defaultResultOptions();
       const existing = result.outcomeOptions.find(item => item.id === outcomeId);
-      const option = { id: outcomeId, label, short: shortRaw || label, points, enabled: !['false','no','0','off'].includes(key(getCell(raw, columns.enabled))) };
+      const option = { id: outcomeId, label, short: shortRaw || label, points, ...(countsAsRaw ? { countsAs: countsAsRaw } : {}), enabled: !['false','no','0','off'].includes(key(getCell(raw, columns.enabled))) };
       if (existing) Object.assign(existing, option); else result.outcomeOptions.push(option);
       if (successRaw) {
         const success = ['true','yes','1','on'].includes(key(successRaw));
@@ -153,18 +155,26 @@ function matchPlayer(oldPlayers, player, used) {
 
 export function applySetup(game, setup) {
   const next = structuredClone(game);
+  const playerIdMap = {}, categoryIdMap = {}, playIdMap = {};
   for (const team of ['home', 'away']) {
     const incoming = setup.teams[team], oldPlayers = next.teams[team].players, used = new Set(), oldCategories = next.playbooks[team];
     if (incoming.name) next.teams[team].name = incoming.name;
-    next.teams[team].players = incoming.players.map(player => ({ ...player, id: matchPlayer(oldPlayers, player, used) }));
+    next.teams[team].players = incoming.players.map(player => { const assigned=matchPlayer(oldPlayers, player, used); if(player.id)playerIdMap[`${team}:${player.id}`]=assigned; return { ...player, id: assigned }; });
     next.playbooks[team] = incoming.categories.map(category => {
       const previous = oldCategories.find(old => key(old.name) === key(category.name));
-      return { id: previous?.id || crypto.randomUUID(), name: category.name, section: category.section,
-        plays: category.plays.map(play => ({ id: previous?.plays.find(old => key(old.name) === key(play.name))?.id || crypto.randomUUID(), name: play.name })) };
+      const categoryId=previous?.id||crypto.randomUUID(); if(category.id)categoryIdMap[`${team}:${category.id}`]=categoryId;
+      return { id: categoryId, name: category.name, section: category.section,
+        plays: category.plays.map(play => { const assigned=previous?.plays.find(old => key(old.name) === key(play.name))?.id||crypto.randomUUID(); if(play.id)playIdMap[`${team}:${category.id}:${play.id}`]=assigned; return { id: assigned, name: play.name }; }) };
     });
     next.sectionNames[team] = incoming.sections;
     next.directSections[team] = incoming.direct;
     next.directNames[team] = incoming.directNames;
+  }
+  const oldOutcomeOptions=next.outcomeOptions||[];
+  for(const event of next.events||[])if(event.type==='play'){
+    const previous=oldOutcomeOptions.find(item=>item.id===event.outcome);
+    if(!event.outcomeLabel&&previous)event.outcomeLabel=previous.label;
+    if(!event.outcomeGroup&&previous)event.outcomeGroup=outcomeGroup(previous);
   }
   if (setup.outcomeOptions) {
     const incomingIds = new Set(setup.outcomeOptions.map(item => item.id));
@@ -175,6 +185,18 @@ export function applySetup(game, setup) {
     next._retainedSuccess = retainedSuccess;
   }
   if (setup.successOutcomes) next.successOutcomes = [...new Set([...setup.successOutcomes, ...(next._retainedSuccess || [])])];
+  if(setup.layout){
+    const remapped={};
+    for(const [layoutKey,value] of Object.entries(setup.layout)){
+      let targetKey=layoutKey,order=[...(value.order||[])],sizes={...(value.sizes||{})};
+      const roster=layoutKey.match(/^roster:(home|away)$/),board=layoutKey.match(/^board:(home|away):(\d+)$/),plays=layoutKey.match(/^plays:(home|away):(.+)$/);
+      if(roster){const team=roster[1];order=order.map(oldId=>playerIdMap[`${team}:${oldId}`]||oldId);sizes=Object.fromEntries(Object.entries(sizes).map(([oldId,size])=>[playerIdMap[`${team}:${oldId}`]||oldId,size]));}
+      if(board){const team=board[1];order=order.map(oldId=>oldId.startsWith('category:')?`category:${categoryIdMap[`${team}:${oldId.slice(9)}`]||oldId.slice(9)}`:oldId);sizes=Object.fromEntries(Object.entries(sizes).map(([oldId,size])=>[oldId.startsWith('category:')?`category:${categoryIdMap[`${team}:${oldId.slice(9)}`]||oldId.slice(9)}`:oldId,size]));}
+      if(plays){const team=plays[1],oldCategory=plays[2],newCategory=categoryIdMap[`${team}:${oldCategory}`]||oldCategory;targetKey=`plays:${team}:${newCategory}`;order=order.map(oldId=>playIdMap[`${team}:${oldCategory}:${oldId}`]||oldId);sizes=Object.fromEntries(Object.entries(sizes).map(([oldId,size])=>[playIdMap[`${team}:${oldCategory}:${oldId}`]||oldId,size]));}
+      remapped[targetKey]={...value,order,sizes};
+    }
+    next.layout=remapped;
+  }
   delete next._retainedSuccess;
   next.updatedAt = new Date().toISOString();
   return next;
@@ -198,6 +220,6 @@ export function setupCSV(game, starter = false) {
       for (const play of category.plays) rows.push(['play', team, category.section, category.name, play.name, '', '']);
     }
   }
-  for (const option of game.outcomeOptions || []) rows.push(['outcome', 'home', '', '', '', '', '', option.label, option.short, option.points, Boolean(game.successOutcomes?.includes(option.id)), option.id, option.enabled !== false]);
+  for (const option of game.outcomeOptions || []) rows.push(['outcome', 'home', '', '', '', '', '', option.label, option.short, option.points, Boolean(game.successOutcomes?.includes(option.id)), option.id, option.enabled !== false, '', option.countsAs || '']);
   return writeCSV(rows);
 }

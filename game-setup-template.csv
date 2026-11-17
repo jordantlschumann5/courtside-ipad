@@ -1,4 +1,4 @@
-kind,team,section,category,play,number,name,outcome,short,points,success,result_id,enabled,action_id
+kind,team,section,category,play,number,name,outcome,short,points,success,result_id,enabled,action_id,counts_as
 team,home,,,,,Our Team
 section,home,1,Offense,,,
 section,home,2,Special Situations,,,

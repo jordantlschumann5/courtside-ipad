@@ -1,19 +1,15 @@
-import { activeEvents, gameOutcomes, getOutcome } from './core.js?v=11';
+import { activeEvents, gameOutcomes, getOutcome, outcomeGroup } from './core.js?v=13';
 
 const freshCounts = game => Object.fromEntries(gameOutcomes(game).map(item => [item.id, 0]));
 const matches = (text, query) => !query || String(text).toLocaleLowerCase().includes(query);
 
-const outcomeFilterIds = {
-  'made-2': ['2_make_assist', '2_make_solo'], 'missed-2': ['2_miss_open', '2_miss_contested'],
-  'made-3': ['3_make_assist', '3_make_solo'], 'missed-3': ['3_miss_open', '3_miss_contested'],
-  turnover: ['forced_turnover', 'unintentional_turnover'], foul: ['earned_foul', 'lucky_foul'],
-};
+const outcomeFilterGroups = { 'made-2': 'two_make', 'missed-2': 'two_miss', 'made-3': 'three_make', 'missed-3': 'three_miss', turnover: 'turnover', foul: 'foul', other: 'other' };
 
 export function buildOverview(game, { team = 'all', quarter = 'all', section = 'all', query = '', outcome = 'all', sort = 'category', recordedOnly = false } = {}) {
   const needle = String(query).trim().toLocaleLowerCase();
   const events = activeEvents(game).filter(event => event.type === 'play' &&
     (team === 'all' || event.team === team) && (quarter === 'all' || event.quarter === Number(quarter)) &&
-    (outcome === 'all' || !outcomeFilterIds[outcome] || outcomeFilterIds[outcome].includes(event.outcome)));
+    (outcome === 'all' || !outcomeFilterGroups[outcome] || (event.outcomeGroup || outcomeGroup(getOutcome(game, event.outcome))) === outcomeFilterGroups[outcome]));
   const counts = new Map();
   for (const event of events) {
     const key = `${event.team}:${event.categoryId}:${event.playId}`;
@@ -36,7 +32,7 @@ export function buildOverview(game, { team = 'all', quarter = 'all', section = '
       seen.add(key);
       const stats = counts.get(key) || { calls: 0, successes: 0, points: 0, outcomes: freshCounts(game) };
       if (recordedOnly && !stats.calls) return;
-      if (outcome !== 'all' && outcomeFilterIds[outcome] && !outcomeFilterIds[outcome].some(id => stats.outcomes[id])) return;
+      if (outcome !== 'all' && outcomeFilterGroups[outcome] && !events.some(event=>event.team===teamId&&event.categoryId===categoryId&&event.playId===playId&&(event.outcomeGroup||outcomeGroup(getOutcome(game,event.outcome)))===outcomeFilterGroups[outcome])) return;
       if (section !== 'all' && String(sectionNo) !== String(section)) return;
       if (needle && !matches(categoryName, needle) && !matches(playName, needle)) return;
       let group = groups.find(item => item.section === sectionNo && item.categoryId === categoryId);

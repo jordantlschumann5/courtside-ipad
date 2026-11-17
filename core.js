@@ -12,7 +12,14 @@ export const OUTCOMES = [
   { id: 'earned_foul', label: 'Earned foul', short: 'Earned Foul', points: 0 },
   { id: 'lucky_foul', label: 'Lucky foul', short: 'Lucky Foul', points: 0 },
 ];
-export const defaultResultOptions = () => OUTCOMES.map(item => ({ ...item, enabled: true }));
+const RESULT_GROUPS = {
+  '2_make_solo': 'two_make', '2_make_assist': 'two_make', '3_make_solo': 'three_make', '3_make_assist': 'three_make',
+  '2_miss_open': 'two_miss', '2_miss_contested': 'two_miss', '3_miss_open': 'three_miss', '3_miss_contested': 'three_miss',
+  forced_turnover: 'turnover', unintentional_turnover: 'turnover', earned_foul: 'foul', lucky_foul: 'foul',
+};
+export const outcomeGroup = option => option?.countsAs || RESULT_GROUPS[option?.id] || 'other';
+export const OUTCOME_GROUP_LABELS = { two_make: '2-point makes', two_miss: '2-point misses', three_make: '3-point makes', three_miss: '3-point misses', turnover: 'Turnovers', foul: 'Fouls', other: 'Other results' };
+export const defaultResultOptions = () => OUTCOMES.map(item => ({ ...item, countsAs: outcomeGroup(item), enabled: true }));
 export const gameOutcomes = game => game?.outcomeOptions || OUTCOMES;
 export const getOutcome = (game, code) => gameOutcomes(game).find(item => item.id === code) || OUTCOMES.find(item => item.id === code);
 
@@ -59,7 +66,7 @@ export function newGame({ name = '', home = 'Our Team', away = 'Opponent', succe
     directSections: { home: blankDirectSections(), away: blankDirectSections() },
     directNames: { home: blankDirectNames(), away: blankDirectNames() },
     sectionNames: { home: blankSectionNames(), away: blankSectionNames() },
-    outcomeOptions: defaultResultOptions(), successOutcomes: [...success], events: [], voidedEventIds: [],
+    outcomeOptions: defaultResultOptions(), successOutcomes: [...success], events: [], voidedEventIds: [], layout: {},
   };
 }
 
@@ -70,6 +77,7 @@ export function normalizeGame(game) {
     directNames: { home: { ...blankDirectNames(), ...(game.directNames?.home || {}) }, away: { ...blankDirectNames(), ...(game.directNames?.away || {}) } },
     sectionNames: { home: { ...blankSectionNames(), ...(game.sectionNames?.home || {}) }, away: { ...blankSectionNames(), ...(game.sectionNames?.away || {}) } },
     outcomeOptions: Array.isArray(game.outcomeOptions) ? game.outcomeOptions : defaultResultOptions(),
+    layout: game.layout && typeof game.layout === 'object' ? game.layout : {},
   };
   if (game?.schema !== 1 || !Array.isArray(game.playbook)) throw new Error('Unsupported game backup.');
   const old = game.playbook.filter(category => !['drag', 'transition', 'extra'].includes(category.name.toLowerCase()));
@@ -159,7 +167,11 @@ export function canAdjust(game, data) {
 }
 
 export function eventLabel(event, game) {
-  if (event.type === 'play') return `${event.categoryName} / ${event.playName} → ${getOutcome(game, event.outcome)?.label || event.outcome}`;
+  if (event.type === 'play') {
+    const option = getOutcome(game, event.outcome), selected = event.outcomeLabel || option?.label || event.outcome;
+    const group = OUTCOMES.some(item=>item.id===event.outcome) ? '' : OUTCOME_GROUP_LABELS[event.outcomeGroup || outcomeGroup(option)];
+    return `${event.categoryName} / ${event.playName} → ${selected}${group && group !== selected ? ` (counts as ${group})` : ''}`;
+  }
   if (event.type === 'extra') return `Extra · ${event.text}`;
   if (event.type === 'timeout') return `${event.duration ? `${event.duration}-second ` : ''}Timeout ${event.delta > 0 ? '+' : '−'}1`;
   if (event.type === 'foul') return `${event.playerName} · foul ${event.delta > 0 ? '+' : '−'}1`;
