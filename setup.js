@@ -1,4 +1,4 @@
-import { blankDirectNames, blankDirectSections, blankSectionNames, defaultResultOptions, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, seedPlaybook, outcomeGroup } from './core.js?v=13';
+import { blankDirectNames, blankDirectSections, blankSectionNames, defaultResultOptions, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, seedPlaybook, outcomeGroup } from './core.js?v=14';
 
 export const SETUP_COLUMNS = ['kind', 'team', 'section', 'category', 'play', 'number', 'name', 'outcome', 'short', 'points', 'success', 'result_id', 'enabled', 'action_id', 'counts_as'];
 const clean = value => String(value ?? '').trim();

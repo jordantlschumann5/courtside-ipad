@@ -1,4 +1,4 @@
-import { activeEvents, gameOutcomes, getOutcome, outcomeGroup } from './core.js?v=13';
+import { activeEvents, gameOutcomes, getOutcome, outcomeGroup } from './core.js?v=14';
 
 const freshCounts = game => Object.fromEntries(gameOutcomes(game).map(item => [item.id, 0]));
 const matches = (text, query) => !query || String(text).toLocaleLowerCase().includes(query);
