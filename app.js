@@ -30,7 +30,7 @@ function currentLayoutDevice() { return window.innerWidth<=700?'phone':window.in
 function defaultPlacement(surface,index,total,device,colsOverride) {
   const cols=colsOverride||columnsForSurface(surface,device),half=Math.max(1,Math.floor(cols/2));
   const configs={
-    'board-main':{w:cols,h:[1,4,1,5][index]||2},'team-cards':{w:device==='phone'?cols:half,h:4},
+    'board-main':{w:cols,h:[1,4,1,5][index]||2},'team-cards':{w:device==='phone'?cols:half,h:4},'team-interior':{w:cols,h:[1,2,3][index]||1},
     'team-metrics':{w:Math.max(1,Math.floor(cols/3)),h:1},
     'board-sections':{w:Math.max(1,Math.floor(cols/3)),h:1},'board-categories':{w:device==='phone'?cols:Math.max(1,Math.floor(cols/3)),h:3},
     'team-roster':{w:device==='phone'?2:Math.max(1,Math.floor(cols/6)),h:1},'board-plays':{w:device==='phone'?2:Math.max(1,Math.floor(cols/4)),h:1},
@@ -39,6 +39,7 @@ function defaultPlacement(surface,index,total,device,colsOverride) {
   };
   const {w,h}=configs[surface]||{w:cols,h:1};
   if(surface==='board-main')return [{x:1,y:1,w:cols,h:1},{x:1,y:2,w:cols,h:4},{x:1,y:6,w:cols,h:1},{x:1,y:7,w:cols,h:5}][index]||{x:1,y:7+index*2,w:cols,h:2};
+  if(surface==='team-interior')return {x:1,y:[1,2,4][index]||1,w:cols,h:[1,2,3][index]||1};
   if(surface==='team-metrics'){const metricWidth=Math.max(1,Math.floor(cols/3)),perRow=Math.max(1,Math.floor(cols/metricWidth));return {x:(index%perRow)*metricWidth+1,y:Math.floor(index/perRow)+1,w:Math.min(metricWidth,cols-(index%perRow)*metricWidth),h:1};}
   if(surface==='team-cards'){const teamWidth=Math.ceil(cols/2);return {x:index===0?1:cols-teamWidth+1,y:1,w:teamWidth,h};}
   const perRow=Math.max(1,Math.floor(cols/w)),row=Math.floor(index/perRow),column=index%perRow;
@@ -57,7 +58,7 @@ function gridStyle(game,key,itemId,index,total,device=currentLayoutDevice(),layo
 function layoutDescriptor(game) {
   if(ui.layoutSurface==='board-main')return {key:'board-main',title:'Board · main layout',surface:'board-main',items:[{id:'game-meta',name:'Game title & quarter',meta:'Board header'},{id:'team-grid',name:'Team cards',meta:'Timeouts, fouls, free throws, rosters',inside:'team-cards'},{id:'utility-row',name:'Game controls',meta:'Quarter filter, undo, success rules'},{id:'workspace',name:'Play sections',meta:'Categories, actions, plays',inside:'board-sections'}]};
   if(ui.layoutSurface==='team-cards')return {key:'team-cards',title:'Board · team cards',surface:'team-cards',items:['home','away'].map(team=>({id:team,name:teamName(game,team),meta:'Team summary and roster',inside:'team-interior',team}))};
-  if(ui.layoutSurface==='team-interior')return {key:`team-interior:${ui.layoutTeam}`,title:`${teamName(game,ui.layoutTeam)} · contents`,surface:'team-interior',items:[{id:'team-stats',name:'Team stats',meta:'Timeouts · fouls · free throws',inside:'team-metrics',team:ui.layoutTeam},{id:'team-roster',name:'Player roster',meta:`${game.teams[ui.layoutTeam]?.players.length||0} player cells`,inside:'team-roster',team:ui.layoutTeam}]};
+  if(ui.layoutSurface==='team-interior')return {key:`team-interior:${ui.layoutTeam}`,title:`${teamName(game,ui.layoutTeam)} · contents`,surface:'team-interior',items:[{id:'team-header',name:`${teamName(game,ui.layoutTeam)} heading`,meta:'Team name and roster editor'},{id:'team-stats',name:'Team stats',meta:'Timeouts · fouls · free throws',inside:'team-metrics',team:ui.layoutTeam},{id:'team-roster',name:'Player roster',meta:`${game.teams[ui.layoutTeam]?.players.length||0} player cells`,inside:'team-roster',team:ui.layoutTeam}]};
   if(ui.layoutSurface==='team-metrics')return {key:`team-metrics:${ui.layoutTeam}`,title:`${teamName(game,ui.layoutTeam)} summary cells`,surface:'team-metrics',items:[{id:'timeouts',name:'Timeouts',meta:'30 sec and 60 sec counters'},{id:'fouls',name:'Team fouls',meta:'Quarter filtered total'},{id:'free-throws',name:'Free throws',meta:'Makes and attempts'}]};
   if(ui.layoutSurface==='board-sections')return {key:`sections:${ui.layoutTeam}`,title:'Board · section tabs',items:Object.entries(game.sectionNames[ui.layoutTeam]||{}).map(([id,name])=>({id,name:`${id} · ${name}`,meta:'Section tab',inside:'board-categories',section:Number(id)}))};
   if(ui.layoutSurface==='team-roster')return {key:`roster:${ui.layoutTeam}`,title:`${teamName(game,ui.layoutTeam)} roster cells`,items:(game.teams[ui.layoutTeam]?.players||[]).map(player=>({id:player.id,name:`${player.number?`#${player.number} `:''}${player.name}`,meta:'Player card'}))};
@@ -135,21 +136,22 @@ function playStats(game) {
 
 function teamCard(game, key, total) {
   const team = game.teams[key], stats = total.teams[key];
-  const metricKey=`team-metrics:${key}`;
+  const metricKey=`team-metrics:${key}`,interiorKey=`team-interior:${key}`;
   return `<section class="team-card ${key}" data-layout-item="${key}"${gridStyle(game,'team-cards',key,['home','away'].indexOf(key),2)} aria-label="${esc(team.name)} roster">
-    <div class="team-heading">
+    <div class="team-interior-grid bento-grid" data-layout-surface="team-interior" style="--bento-columns:${layoutColumns(game,interiorKey,currentLayoutDevice())}">
+    <div class="team-heading" data-layout-item="team-header"${gridStyle(game,interiorKey,'team-header',0,3)}>
       <div><span class="team-kicker">${key === 'home' ? 'TEAM A' : 'TEAM B'}</span><h2>${esc(team.name)}</h2></div>
       <button class="subtle small" data-action="edit-roster" data-team="${key}">Edit team & roster</button>
     </div>
-    <div class="team-metrics bento-grid" data-layout-surface="team-metrics" style="--bento-columns:${layoutColumns(game,`team-metrics:${key}`,currentLayoutDevice())}">
+    <div class="team-stat-group" data-layout-item="team-stats"${gridStyle(game,interiorKey,'team-stats',1,3)}><div class="team-metrics bento-grid" data-layout-surface="team-metrics" style="--bento-columns:${layoutColumns(game,`team-metrics:${key}`,currentLayoutDevice())}">
       <div class="metric timeout-metric" data-layout-item="timeouts"${gridStyle(game,metricKey,'timeouts',0,3)}><span>Timeouts</span><div class="timeout-controls">${[[30,stats.timeouts30,3],[60,stats.timeouts60,1]].map(([duration,count,limit]) => `<div class="timeout-type"><span>${duration} sec</span><div class="metric-controls"><button data-action="timeout" data-team="${key}" data-duration="${duration}" data-delta="-1" aria-label="Remove ${duration}-second timeout for ${esc(team.name)}" ${count <= 0 ? 'disabled' : ''}>−</button><strong>${count}/${limit}</strong><button data-action="timeout" data-team="${key}" data-duration="${duration}" data-delta="1" aria-label="Add ${duration}-second timeout for ${esc(team.name)}" ${count >= limit ? 'disabled' : ''}>+</button></div></div>`).join('')}</div>${stats.timeoutsUnclassified ? `<small class="timeout-legacy" title="Earlier timeout entries did not specify a duration">Older unclassified: ${stats.timeoutsUnclassified}</small>` : ''}</div>
       <div class="metric foul-metric" data-layout-item="fouls"${gridStyle(game,metricKey,'fouls',1,3)}><span>Team fouls · ${ui.filter === 'all' ? 'Game' : `Q${ui.filter}`}</span><strong>${teamFouls(game, key, ui.filter)}</strong></div>
       <div class="metric ft-metric" data-layout-item="free-throws"${gridStyle(game,metricKey,'free-throws',2,3)}><span>Free throws</span><strong>${stats.ftMade}–${stats.ftAttempts}</strong></div>
-    </div>
-    <div class="roster-strip bento-grid" data-layout-surface="team-roster" style="--bento-columns:${layoutColumns(game,`roster:${key}`,currentLayoutDevice())}">${team.players.length ? orderByLayout(game,`roster:${key}`,team.players).map((player,index,list) => {
+    </div></div>
+    <div class="roster-strip bento-grid" data-layout-item="team-roster"${gridStyle(game,interiorKey,'team-roster',2,3)} data-layout-surface="team-roster" style="--bento-columns:${layoutColumns(game,`roster:${key}`,currentLayoutDevice())}">${team.players.length ? orderByLayout(game,`roster:${key}`,team.players).map((player,index,list) => {
       const p = total.players[player.id] || { fouls: 0, ftMade: 0, ftAttempts: 0 };
       return `<button class="player-chip${sizeClass(game,`roster:${key}`,player.id)}" data-layout-item="${esc(player.id)}"${gridStyle(game,`roster:${key}`,player.id,index,list.length)} data-action="player" data-team="${key}" data-player="${player.id}" title="Edit fouls and free throws"><span class="jersey">${esc(player.number || '—')}</span><span class="player-name">${esc(player.name === `#${player.number}` ? 'Player' : player.name)}</span><span class="player-chip-stats"><span class="player-foul-count"><b>PF</b><strong>${p.fouls}</strong></span><small>FT ${p.ftMade}–${p.ftAttempts}</small></span></button>`;
-    }).join('') : `<button class="empty-roster" data-action="edit-roster" data-team="${key}">+ Add players to ${esc(team.name)}</button>`}</div>
+    }).join('') : `<button class="empty-roster" data-action="edit-roster" data-team="${key}">+ Add players to ${esc(team.name)}</button>`}</div></div>
   </section>`;
 }
 
