@@ -1,8 +1,8 @@
-import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, OUTCOME_GROUP_LABELS, outcomeGroup, gameOutcomes, getOutcome, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=15';
-import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=15';
-import { buildOverview } from './overview.js?v=15';
-import { listGames, putGame, listSetups, putSetup, deleteSetup } from './storage.js?v=15';
-import { pointsPerPossession } from './calculator.js?v=15';
+import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, OUTCOME_GROUP_LABELS, outcomeGroup, gameOutcomes, getOutcome, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=16';
+import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=16';
+import { buildOverview } from './overview.js?v=16';
+import { listGames, putGame, listSetups, putSetup, deleteSetup } from './storage.js?v=16';
+import { pointsPerPossession } from './calculator.js?v=16';
 
 const root = document.querySelector('#app');
 const ui = { game: null, games: [], setupProfiles: [], activeTeam: 'home', shotTeam: 'home', section: 1, view: 'board', overviewTeam: 'home', overviewSection: 'all', overviewQuery: '', overviewOutcome: 'all', overviewSort: 'category', overviewRecorded: false, selectedPlay: null, dialog: null, filter: 'all', historyTeam: 'all', historyType: 'all', pendingSetup: null, layoutSurface: 'board-main', layoutTeam: 'home', layoutSection: 1, layoutCategory: '', layoutDevice: 'desktop', layoutDraft: null, layoutPointer: null, layoutSelected: '', layoutStack: [], layoutUndo: [], layoutStatus: '', notice: '', busy: false, storageError: false };
