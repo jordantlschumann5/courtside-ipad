@@ -1,0 +1,1205 @@
+<div id="courtside-functional-demo">
+  <section id="cs-board-app" aria-label="Courtside game board">
+    <header class="app-header">
+      <div class="app-brand"><span>C</span><b>COURTSIDE</b><small>EIU WBB · Game 1</small></div>
+      <div class="app-toolbar">
+        <div class="app-orientation" role="group" aria-label="iPad orientation">
+          <button type="button" data-app-orientation="landscape" aria-pressed="true">Landscape</button>
+          <button type="button" data-app-orientation="portrait" aria-pressed="false">Portrait</button>
+        </div>
+        <button type="button" data-page="entries">Entries</button>
+        <button type="button" data-page="overview">Overview</button>
+        <button type="button" data-page="shots">Shot tracker</button>
+        <button type="button" id="cs-open-layout" class="app-primary">Edit layout</button>
+      </div>
+    </header>
+    <main class="app-main">
+      <div class="app-subnav">
+        <div class="app-live"><i></i> Game in progress</div>
+        <span class="app-live">Select a category, play, then result</span>
+      </div>
+      <section class="app-screen" data-screen="board">
+        <div class="app-canvas" id="cs-app-canvas">
+          <section class="app-cell team-cell" data-layout-id="home" id="cs-team-home">
+            <div class="cell-head"><h2>Our Team</h2><span class="team-score">18</span></div>
+            <div class="team-counters" data-team="home">
+              <div class="mini-control" data-counter="to30"><span>30s timeouts</span><button data-step="-1">−</button><b>1 / 3</b><button data-step="1">+</button></div>
+              <div class="mini-control" data-counter="to60"><span>60s timeout</span><button data-step="-1">−</button><b>0 / 1</b><button data-step="1">+</button></div>
+              <div class="mini-control" data-counter="fouls"><span>Team fouls · Q2</span><button data-step="-1">−</button><b>3</b><button data-step="1">+</button></div>
+              <div class="mini-control" data-counter="ftm"><span>FT Made</span><button data-step="-1">−</button><b>4</b><button data-step="1">+</button></div>
+              <div class="mini-control" data-counter="fta"><span>FT Attempted</span><button data-step="-1">−</button><b>5</b><button data-step="1">+</button></div>
+            </div>
+            <div class="player-grid" data-team="home">
+              <div class="player-chip" data-player="11"><b>#11</b><span class="pf-control"><button type="button" data-pf-step="-1">−</button><small>PF <b>0</b></small><button type="button" data-pf-step="1">+</button></span><span>FT 1–2</span></div>
+              <div class="player-chip" data-player="22"><b>#22</b><span class="pf-control"><button type="button" data-pf-step="-1">−</button><small>PF <b>1</b></small><button type="button" data-pf-step="1">+</button></span><span>FT 2–2</span></div>
+              <div class="player-chip" data-player="24"><b>#24</b><span class="pf-control"><button type="button" data-pf-step="-1">−</button><small>PF <b>2</b></small><button type="button" data-pf-step="1">+</button></span><span>FT 0–0</span></div>
+              <div class="player-chip" data-player="33"><b>#33</b><span class="pf-control"><button type="button" data-pf-step="-1">−</button><small>PF <b>0</b></small><button type="button" data-pf-step="1">+</button></span><span>FT 1–1</span></div>
+              <div class="player-chip" data-player="45"><b>#45</b><span class="pf-control"><button type="button" data-pf-step="-1">−</button><small>PF <b>1</b></small><button type="button" data-pf-step="1">+</button></span><span>FT 0–0</span></div>
+            </div>
+          </section>
+          <section class="app-cell team-cell" data-layout-id="away" id="cs-team-away">
+            <div class="cell-head"><h2>Opponent</h2><span class="team-score">16</span></div>
+            <div class="team-counters" data-team="away">
+              <div class="mini-control" data-counter="to30"><span>30s timeouts</span><button data-step="-1">−</button><b>2 / 3</b><button data-step="1">+</button></div>
+              <div class="mini-control" data-counter="to60"><span>60s timeout</span><button data-step="-1">−</button><b>0 / 1</b><button data-step="1">+</button></div>
+              <div class="mini-control" data-counter="fouls"><span>Team fouls · Q2</span><button data-step="-1">−</button><b>4</b><button data-step="1">+</button></div>
+              <div class="mini-control" data-counter="ftm"><span>FT Made</span><button data-step="-1">−</button><b>2</b><button data-step="1">+</button></div>
+              <div class="mini-control" data-counter="fta"><span>FT Attempted</span><button data-step="-1">−</button><b>4</b><button data-step="1">+</button></div>
+            </div>
+            <div class="player-grid" data-team="away">
+              <div class="player-chip" data-player="1"><b>#1</b><span class="pf-control"><button type="button" data-pf-step="-1">−</button><small>PF <b>1</b></small><button type="button" data-pf-step="1">+</button></span><span>FT 0–0</span></div>
+              <div class="player-chip" data-player="5"><b>#5</b><span class="pf-control"><button type="button" data-pf-step="-1">−</button><small>PF <b>0</b></small><button type="button" data-pf-step="1">+</button></span><span>FT 0–0</span></div>
+              <div class="player-chip" data-player="13"><b>#13</b><span class="pf-control"><button type="button" data-pf-step="-1">−</button><small>PF <b>2</b></small><button type="button" data-pf-step="1">+</button></span><span>FT 1–2</span></div>
+              <div class="player-chip" data-player="30"><b>#30</b><span class="pf-control"><button type="button" data-pf-step="-1">−</button><small>PF <b>1</b></small><button type="button" data-pf-step="1">+</button></span><span>FT 0–0</span></div>
+              <div class="player-chip" data-player="44"><b>#44</b><span class="pf-control"><button type="button" data-pf-step="-1">−</button><small>PF <b>0</b></small><button type="button" data-pf-step="1">+</button></span><span>FT 1–2</span></div>
+            </div>
+          </section>
+          <section class="app-cell game-controls" data-layout-id="quarter" id="cs-game-controls">
+            <div class="cell-head"><h2>Game controls</h2><button type="button" data-action="game-over">Game stop</button></div>
+            <div class="app-quarter" role="group" aria-label="Quarter">
+              <span>Quarter</span><button type="button" data-quarter="1">1</button><button type="button" data-quarter="2" class="is-active">2</button><button type="button" data-quarter="3">3</button><button type="button" data-quarter="4">4</button>
+              <button type="button" id="cs-undo-entry">Undo last entry</button>
+            </div>
+            <div class="quick-summary"><span>Points <b id="sum-points">34</b></span><span>Turnovers <b id="sum-to">5</b></span><span>Fouls <b id="sum-fouls">7</b></span></div>
+          </section>
+          <section class="app-cell play-cell" data-layout-id="playarea" id="cs-play-area">
+            <div class="cell-head"><h2>Choose a play or action</h2><span class="section-hint">Tap a play, then choose its result</span></div>
+            <div class="section-tabs" role="tablist" aria-label="Play sections">
+              <button type="button" data-section="1" class="is-active">Section 1</button><button type="button" data-section="2">Section 2</button><button type="button" data-section="3">Section 3</button>
+            </div>
+            <div class="action-row"><button type="button" data-play="Drag">Drag · result</button><button type="button" data-play="Transition">Transition · result</button><button type="button" data-extra>Extra · text entry</button></div>
+            <div class="category-row" id="cs-categories"></div>
+            <div class="play-list" id="cs-plays"></div>
+          </section>
+          <section class="app-cell shot-cell" data-layout-id="shottracker" id="cs-shot-tracker">
+            <div class="cell-head"><h2>Shot selection</h2><button type="button" data-page="shots">Full tracker</button></div>
+            <div class="medal-row" data-team="Blue"><strong>Blue</strong><span>Gold <b>2</b><button data-medal="gold" data-step="-1">−</button><button data-medal="gold" data-step="1">+</button></span><span>Silver <b>2</b><button data-medal="silver" data-step="-1">−</button><button data-medal="silver" data-step="1">+</button></span><span>Bronze <b>1</b><button data-medal="bronze" data-step="-1">−</button><button data-medal="bronze" data-step="1">+</button></span></div>
+            <div class="medal-row" data-team="White"><strong>White</strong><span>Gold <b>3</b><button data-medal="gold" data-step="-1">−</button><button data-medal="gold" data-step="1">+</button></span><span>Silver <b>1</b><button data-medal="silver" data-step="-1">−</button><button data-medal="silver" data-step="1">+</button></span><span>Bronze <b>2</b><button data-medal="bronze" data-step="-1">−</button><button data-medal="bronze" data-step="1">+</button></span></div>
+          </section>
+        </div>
+      </section>
+      <section class="app-screen" data-screen="result" hidden>
+        <div class="screen-heading"><button type="button" data-back>← Board</button><div><h1 id="cs-result-title">Choose result</h1><p id="cs-result-context"></p></div></div>
+        <div class="result-grid" id="cs-result-grid"></div>
+      </section>
+      <section class="app-screen" data-screen="entries" hidden>
+        <div class="screen-heading"><button type="button" data-back>← Board</button><div><h1>Recent entries</h1><p>Latest actions from this game</p></div></div><div class="entries-list" id="cs-entries-list"></div>
+      </section>
+      <section class="app-screen" data-screen="overview" hidden>
+        <div class="screen-heading"><button type="button" data-back>← Board</button><div><h1>Game overview</h1><p>Results by play and outcome</p></div></div><div class="overview-summary" id="cs-overview-summary"></div><div class="overview-list" id="cs-overview-list"></div>
+      </section>
+      <section class="app-screen" data-screen="shots" hidden>
+        <div class="screen-heading"><button type="button" data-back>← Board</button><div><h1>Shot tracker</h1><p>Gold · Silver · Bronze</p></div></div><div class="shots-full" id="cs-shots-full"></div>
+      </section>
+      <section class="app-screen" data-screen="extra" hidden>
+        <div class="screen-heading"><button type="button" data-back>← Board</button><div><h1>Extra entry</h1><p>Add a short note to the game log</p></div></div><form id="cs-extra-form"><label>Entry text<input id="cs-extra-text" maxlength="80" required placeholder="Type a quick note"></label><button class="app-primary" type="submit">Save entry</button></form>
+      </section>
+    </main>
+  </section>
+  <div id="cs-editor-shell" hidden>
+  <div id="courtside-layout-demo">
+  <div class="cs-app">
+    <header class="cs-header">
+      <div class="cs-brand"><span aria-hidden="true">C</span><b>COURTSIDE</b></div>
+      <div class="cs-header-title">Layout editor</div>
+      <button type="button" class="cs-return-app">Return to board</button>
+      <button type="button" class="cs-save">Save &amp; preview</button>
+    </header>
+    <div class="cs-body">
+      <div class="cs-toolbar">
+        <label>Page<select id="cs-page"></select></label>
+        <label class="cs-scope-label">Canvas<select id="cs-scope"></select></label>
+        <button type="button" class="cs-back" hidden>Back</button>
+        <label class="cs-columns-label">Grid columns<select id="cs-columns" aria-label="Grid columns"></select></label>
+        <button type="button" class="cs-undo" disabled>Undo</button>
+      </div>
+      <div class="cs-devices" role="group" aria-label="iPad orientation">
+        <button type="button" data-orientation="portrait" aria-pressed="false">iPad portrait</button>
+        <button type="button" data-orientation="landscape" aria-pressed="true">iPad landscape</button>
+        <button type="button" class="cs-compare" hidden>Show original layout</button>
+      </div>
+      <div class="cs-caption">
+        <span class="cs-location"></span>
+        <span class="cs-fit" aria-live="polite"></span>
+        <span class="cs-help">Drag the grip to move. Pull the corner to resize.</span>
+      </div>
+      <div class="cs-inspector">
+        <div class="cs-inspector-head"><b class="cs-selected"></b><button type="button" class="cs-enter">Edit inside</button></div>
+        <div class="cs-fields">
+          <label>Column<input type="number" inputmode="numeric" min="1" data-field="x"></label>
+          <label>Row<input type="number" inputmode="numeric" min="1" max="48" data-field="y"></label>
+          <label>Width<input type="number" inputmode="numeric" min="1" data-field="w"></label>
+          <label>Height<input type="number" inputmode="numeric" min="1" max="6" data-field="h"></label>
+        </div>
+      </div>
+      <div class="cs-grid" aria-label="Layout preview"></div>
+      <div class="cs-game-preview" hidden></div>
+      <p class="cs-status" role="status"></p>
+    </div>
+  </div>
+</div>
+  </div>
+</div>
+<style>
+  #courtside-functional-demo {--nav:#102b4c;--ink:#132f50;--paper:#fff;--desk:#eff4f8;--line:#c1cfdd;--muted:#526d88;--gold:#f2c75c;color-scheme:light dark;color:light-dark(var(--ink),#e8f0fa);font:500 14px/1.35 system-ui,sans-serif;}
+  #courtside-functional-demo * {box-sizing:border-box;}
+  #courtside-functional-demo [hidden] {display:none!important;}
+  #cs-board-app {max-width:1280px;margin:0 auto;background:light-dark(var(--desk),#111e30);border:1px solid var(--line);border-radius:16px;overflow:hidden;}
+  #cs-board-app button,#cs-board-app input {font:inherit;color:inherit;}
+  #cs-board-app button {min-height:44px;border:1px solid var(--line);border-radius:9px;background:light-dark(#fff,#1c2a3d);padding:7px 11px;touch-action:manipulation;}
+  #cs-board-app button:active {transform:translateY(1px);}
+  #cs-board-app .app-header {background:var(--nav);color:#f8fbff;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  #cs-board-app .app-brand {display:flex;align-items:center;gap:8px;min-width:180px;}
+  #cs-board-app .app-brand > span {width:30px;height:30px;border-radius:7px;display:grid;place-items:center;background:var(--gold);color:#102b4c;font-weight:900;}
+  #cs-board-app .app-brand small {opacity:.8;margin-left:4px;}
+  #cs-board-app .app-toolbar,#cs-board-app .app-orientation {display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  #cs-board-app .app-toolbar > button,#cs-board-app .app-orientation button {min-height:40px;padding:6px 10px;font-size:13px;}
+  #cs-board-app button.app-primary {background:var(--gold);color:#102b4c;border-color:transparent;font-weight:800;}
+  #cs-board-app .app-orientation button[aria-pressed=true] {background:#dce9f5;color:#123a63;border-color:#dce9f5;}
+  #cs-board-app .app-main {padding:10px;}
+  #cs-board-app .app-subnav {display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:9px;}
+  #cs-board-app .app-quarter {display:flex;align-items:center;gap:4px;}
+  #cs-board-app .app-quarter span {font-weight:800;margin-right:4px;}
+  #cs-board-app .app-quarter button {min-width:42px;}
+  #cs-board-app .app-quarter .is-active,#cs-board-app .section-tabs .is-active,#cs-board-app .category-row .is-active {background:#173d69;color:#fff;border-color:#173d69;}
+  #cs-board-app .app-live {margin-left:auto;color:light-dark(#385976,#b9cde1);font-size:12px;display:flex;align-items:center;gap:6px;}
+  #cs-board-app .app-live i {width:8px;height:8px;border-radius:50%;background:#35a16d;}
+  #cs-board-app .app-canvas {--app-columns:6;display:grid;grid-template-columns:repeat(var(--app-columns),minmax(0,1fr));grid-auto-rows:minmax(60px,auto);gap:7px;}
+  #cs-board-app .app-cell {min-width:0;min-height:0;background:light-dark(#fff,#1c2a3d);border:1px solid var(--line);border-radius:11px;padding:8px;overflow-wrap:anywhere;}
+  #cs-board-app .team-cell {display:flex;flex-direction:column;gap:6px;}
+  #cs-board-app .cell-head {display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0;}
+  #cs-board-app h1,#cs-board-app h2,#cs-board-app p {margin:0;}
+  #cs-board-app h1 {font-size:20px;} #cs-board-app h2 {font-size:15px;font-weight:800;}
+  #cs-board-app .team-score {font-size:20px;font-weight:850;font-variant-numeric:tabular-nums;}
+  #cs-board-app .team-counters {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;}
+  #cs-board-app .mini-control {min-width:0;border-radius:7px;background:light-dark(#f1f5f8,#26384d);padding:4px;display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(26px,auto) 30px;gap:3px;align-items:center;}
+  #cs-board-app .mini-control > span {grid-column:1/-1;font-size:11px;font-weight:700;color:light-dark(#49647e,#c0d2e2);white-space:normal;line-height:1.15;}
+  #cs-board-app .mini-control > b {text-align:center;font-variant-numeric:tabular-nums;font-size:12px;}
+  #cs-board-app .mini-control button {min-height:30px;height:30px;padding:0;font-weight:800;border-radius:6px;}
+  #cs-board-app .player-grid {display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;margin-top:auto;}
+  #cs-board-app .player-chip {min-width:0;min-height:48px;padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;font-size:11px;line-height:1.15;border:1px solid var(--line);border-radius:7px;background:light-dark(#f7fafc,#26384d);}
+  #cs-board-app .player-chip b {font-size:13px;}
+  #cs-board-app .player-chip span {color:light-dark(#526d88,#c1d2e1);}
+  #cs-board-app .player-chip i {font-style:normal;font-weight:800;}
+  #cs-board-app .pf-control {display:flex;align-items:center;justify-content:center;gap:2px;}
+  #cs-board-app .pf-control button {min-width:25px;min-height:24px;height:24px;padding:0;font-size:12px;border-radius:5px;}
+  #cs-board-app .pf-control small {font-size:10px;white-space:nowrap;}
+  #cs-board-app .pf-control small b {font-size:11px;}
+  #cs-board-app .quick-summary {display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:5px;}
+  #cs-board-app .quick-summary span {background:light-dark(#eff4f8,#26384d);border-radius:7px;padding:7px 9px;font-size:12px;}
+  #cs-board-app .quick-summary b {font-variant-numeric:tabular-nums;}
+  #cs-board-app .play-cell {display:flex;flex-direction:column;gap:6px;}
+  #cs-board-app .section-hint,#cs-board-app .screen-heading p {font-size:12px;color:light-dark(#5d7893,#b3c7da);}
+  #cs-board-app .section-tabs,#cs-board-app .action-row,#cs-board-app .category-row,#cs-board-app .play-list {display:flex;gap:5px;flex-wrap:wrap;align-items:center;}
+  #cs-board-app .section-tabs button,#cs-board-app .action-row button,#cs-board-app .category-row button,#cs-board-app .play-list button {min-height:40px;padding:6px 10px;font-size:12px;font-weight:750;}
+  #cs-board-app .action-row button {background:light-dark(#f5f8fb,#26384d);}
+  #cs-board-app .play-list {padding:5px 0 0;border-top:1px solid var(--line);}
+  #cs-board-app .play-list button {background:light-dark(#e8f0f7,#243850);}
+  #cs-board-app .medal-row {display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:4px;}
+  #cs-board-app .medal-row > strong {min-width:42px;}
+  #cs-board-app .medal-row > span {display:flex;align-items:center;gap:5px;border-radius:7px;background:light-dark(#f1f5f8,#26384d);padding:3px 5px;font-size:12px;}
+  #cs-board-app .medal-row b {font-variant-numeric:tabular-nums;}
+  #cs-board-app .medal-row button {min-height:30px;height:30px;min-width:30px;padding:0;font-weight:800;}
+  #cs-board-app .app-screen {min-width:0;}
+  #cs-board-app .screen-heading {display:flex;align-items:center;gap:10px;margin:0 0 10px;}
+  #cs-board-app .result-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+  #cs-board-app .result-grid button {min-height:56px;font-weight:800;text-align:center;}
+  #cs-board-app .entries-list,#cs-board-app .overview-list {display:grid;gap:5px;}
+  #cs-board-app .entry-row,#cs-board-app .overview-row {display:flex;align-items:center;justify-content:space-between;gap:8px;background:light-dark(#fff,#1c2a3d);border:1px solid var(--line);border-radius:8px;padding:8px 10px;}
+  #cs-board-app .entry-row small {color:light-dark(#58738d,#b9cbdd);}
+  #cs-board-app .overview-summary {display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
+  #cs-board-app .overview-summary span {background:light-dark(#fff,#1c2a3d);border:1px solid var(--line);border-radius:8px;padding:8px 10px;}
+  #cs-board-app .shots-full {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+  #cs-board-app #cs-extra-form {display:flex;align-items:end;gap:8px;flex-wrap:wrap;}
+  #cs-board-app #cs-extra-form label {display:grid;gap:5px;flex:1 1 250px;font-size:12px;color:light-dark(#526d88,#b9ccde);}
+  #cs-board-app #cs-extra-text {min-height:44px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:light-dark(#fff,#1c2a3d);color:inherit;font-size:16px;}
+  #cs-editor-shell {width:100%;}
+  @media (max-width:899px) {
+    #cs-board-app .app-header {align-items:flex-start;}
+    #cs-board-app .app-toolbar {width:100%;}
+    #cs-board-app .app-canvas {--app-columns:4;}
+  }
+  @media (max-width:560px) {
+    #cs-board-app {border-radius:10px;}
+    #cs-board-app .app-main {padding:7px;}
+    #cs-board-app .app-header {padding:9px;}
+    #cs-board-app .app-brand {min-width:0;}
+    #cs-board-app .app-brand small {display:none;}
+    #cs-board-app .app-toolbar > button,#cs-board-app .app-orientation button {font-size:11px;padding-inline:7px;}
+    #cs-board-app .app-canvas {gap:5px;grid-auto-rows:minmax(54px,auto);}
+    #cs-board-app .app-cell {padding:6px;border-radius:8px;}
+    #cs-board-app .team-counters {grid-template-columns:repeat(2,minmax(0,1fr));}
+    #cs-board-app .player-chip {font-size:10px;}
+    #cs-board-app .player-grid {gap:3px;}
+    #cs-board-app .section-hint {display:none;}
+    #cs-board-app .shots-full {grid-template-columns:1fr;}
+  }
+</style>
+<style>
+  #courtside-layout-demo {color-scheme:light dark; --ink:light-dark(#132f50,#e8f0fa);--nav:#102b4c;--paper:light-dark(#fff,#1c2a3d);--desk:light-dark(#f0f5fa,#111e30);--line:light-dark(#b9cede,#435b75);--soft:light-dark(#456483,#a8bdd4);--accent:light-dark(#075da2,#8cc9ff);--gold:#f3ca62;font:500 14px/1.4 system-ui,sans-serif;color:var(--ink);}
+  #courtside-layout-demo * {box-sizing:border-box;}
+  #courtside-layout-demo .cs-app {background:var(--desk);border:1px solid var(--line);border-radius:14px;overflow:hidden;}
+  #courtside-layout-demo .cs-header {background:var(--nav);color:#f7fbff;display:flex;align-items:center;gap:12px;padding:12px 15px;flex-wrap:wrap;}
+  #courtside-layout-demo .cs-brand {display:flex;align-items:center;gap:8px;letter-spacing:.08em;}
+  #courtside-layout-demo .cs-brand span {display:grid;place-items:center;width:28px;height:28px;border-radius:6px;background:var(--gold);color:#102b4c;font-weight:900;}
+  #courtside-layout-demo .cs-header-title {font-size:16px;}
+  #courtside-layout-demo .cs-body {padding:14px;}
+  #courtside-layout-demo button,#courtside-layout-demo input,#courtside-layout-demo select {font:inherit;color:inherit;}
+  #courtside-layout-demo button,#courtside-layout-demo select,#courtside-layout-demo input {background:var(--paper);border:1px solid var(--line);border-radius:7px;}
+  #courtside-layout-demo button {padding:7px 11px;min-height:38px;}
+  #courtside-layout-demo button:disabled {opacity:.5;}
+  #courtside-layout-demo .cs-save {margin-left:auto;background:var(--gold);color:#102b4c;border-color:transparent;font-weight:750;}
+  #courtside-layout-demo .cs-return-app {background:transparent;color:#f7fbff;border-color:rgba(255,255,255,.4);}
+  #courtside-layout-demo .cs-save {margin-left:0;}
+  #courtside-layout-demo .cs-toolbar,#courtside-layout-demo .cs-fields {display:flex;gap:8px;flex-wrap:wrap;align-items:end;}
+  #courtside-layout-demo .cs-back {background:var(--paper);}
+  #courtside-layout-demo .cs-location {display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+  #courtside-layout-demo .cs-location .cs-crumb-current {color:var(--accent);}
+  #courtside-layout-demo .cs-group-label .cs-pick {font-weight:800;}
+  #courtside-layout-demo label {min-width:0;display:grid;gap:4px;color:var(--soft);font-size:12px;}
+  #courtside-layout-demo select,#courtside-layout-demo input {padding:7px;min-height:37px;max-width:100%;color:var(--ink);font-size:14px;}
+  #courtside-layout-demo .cs-caption {display:flex;gap:4px 14px;justify-content:space-between;flex-wrap:wrap;margin:12px 0 6px;}
+  #courtside-layout-demo .cs-location {font-weight:750;}
+  #courtside-layout-demo .cs-help,#courtside-layout-demo .cs-fit,#courtside-layout-demo .cs-status {font-size:12px;color:var(--soft);}
+  #courtside-layout-demo .cs-fit {font-weight:700;}
+  #courtside-layout-demo .cs-columns-note {font-size:12px;color:var(--soft);margin:6px 0;}
+  #courtside-layout-demo .cs-grid {--step:62px;display:grid;grid-template-columns:repeat(var(--columns,6),minmax(0,1fr));grid-auto-rows:minmax(var(--step),auto);position:relative;isolation:isolate;background:var(--desk);}
+  #courtside-layout-demo .cs-grid-lines {grid-column:1/-1;grid-row:1 / span var(--rows);background:var(--paper);border:1px solid var(--line);border-radius:9px;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px),linear-gradient(to bottom,var(--line) 1px,transparent 1px);background-size:calc(100% / var(--columns)) var(--step);pointer-events:none;}
+  #courtside-layout-demo .cs-tile {position:relative;align-self:stretch;min-width:0;min-height:0;display:flex;flex-direction:column;gap:5px;padding:7px 8px;margin:3px;border:1px solid var(--line);background:var(--paper);border-radius:9px;overflow:visible;}
+  #courtside-layout-demo .cs-tile.is-selected {border:2px solid var(--accent);padding:6px 7px;}
+  #courtside-layout-demo .cs-tile.is-moving {z-index:2;}
+  #courtside-layout-demo .cs-tile-head {display:flex;align-items:center;gap:5px;min-width:0;}
+  #courtside-layout-demo .cs-pick {padding:0;text-align:left;font-weight:750;border:0;background:none;min-height:28px;min-width:0;overflow-wrap:anywhere;}
+  #courtside-layout-demo .cs-grip {min-height:28px;width:28px;flex:0 0 28px;padding:0;color:var(--accent);cursor:grab;touch-action:none;user-select:none;}
+  #courtside-layout-demo .cs-resize {position:absolute;right:0;bottom:0;width:38px;height:38px;min-height:0;padding:0;background:none;border:0;cursor:nwse-resize;touch-action:none;user-select:none;}
+  #courtside-layout-demo .cs-resize::after {content:"";position:absolute;width:12px;height:12px;right:6px;bottom:6px;border-right:3px solid var(--accent);border-bottom:3px solid var(--accent);border-radius:2px;}
+  #courtside-layout-demo .cs-content {display:flex;flex-wrap:wrap;align-content:start;align-items:center;gap:4px 6px;margin:0 25px 0 1px;font-size:clamp(11px,2.4vw,13px);min-width:0;}
+  #courtside-layout-demo .cs-content span {background:var(--desk);border-radius:5px;padding:2px 5px;overflow-wrap:anywhere;}
+  #courtside-layout-demo .cs-content .cs-count {color:var(--accent);font-weight:750;font-variant-numeric:tabular-nums;}
+  #courtside-layout-demo .cs-content .cs-roster {flex:1 0 100%;display:flex;flex-wrap:wrap;gap:4px;padding:0;background:none;}
+  #courtside-layout-demo .cs-inspector {background:var(--paper);border:1px solid var(--line);border-radius:8px;margin:0 0 8px;padding:9px;display:flex;align-items:end;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+  #courtside-layout-demo .cs-inspector-head {display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  #courtside-layout-demo .cs-fields input {width:61px;min-width:50px;}
+  #courtside-layout-demo .cs-status {margin:5px 0 0;min-height:17px;}
+  #courtside-layout-demo .cs-tile[hidden],#courtside-layout-demo [hidden] {display:none;}
+  #courtside-layout-demo .cs-single .cs-tile-head {gap:1px;}
+  #courtside-layout-demo .cs-single {padding-inline:3px;}
+  #courtside-layout-demo .cs-single .cs-tile-head {flex-wrap:wrap;}
+  #courtside-layout-demo .cs-single .cs-tile-head .cs-pick {min-height:20px;font-size:11px;}
+  #courtside-layout-demo .cs-portrait .cs-grid {--step:70px;}
+  #courtside-layout-demo .is-preview .cs-grid-lines {visibility:hidden;}
+  #courtside-layout-demo .is-preview .cs-pick {cursor:default;}
+  #courtside-layout-demo .is-preview .cs-content {margin-right:1px;}
+  #courtside-layout-demo .cs-devices {display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0;}
+  #courtside-layout-demo .cs-devices button[aria-pressed=true],#courtside-layout-demo .cs-game-tab[aria-current=page] {background:var(--nav);color:#fff;border-color:var(--nav);}
+  #courtside-layout-demo button,#courtside-layout-demo select,#courtside-layout-demo input {min-height:44px;}
+  #courtside-layout-demo .cs-grip {min-height:44px;width:44px;flex-basis:44px;}
+  #courtside-layout-demo .cs-pick {min-height:38px;}
+  #courtside-layout-demo .cs-resize {width:44px;height:44px;min-height:44px;}
+  #courtside-layout-demo .cs-grid {--step:62px;}
+  #courtside-layout-demo .cs-portrait .cs-grid,#courtside-layout-demo .cs-portrait .cs-game-preview {max-width:700px;margin-inline:auto;}
+  #courtside-layout-demo .cs-game-preview {display:block;width:100%;max-width:none;margin-top:12px;min-width:0;}
+  #courtside-layout-demo .cs-game-heading {margin:10px 0 6px;font-size:17px;font-weight:750;}
+  #courtside-layout-demo .cs-live-grid {display:grid;width:100%;grid-template-columns:repeat(var(--columns),minmax(0,1fr));grid-auto-rows:minmax(var(--unit,36px),auto);align-items:stretch;gap:6px;min-width:0;}
+  #courtside-layout-demo .cs-live-grid.cs-outer {--unit:52px;}
+  #courtside-layout-demo .cs-live-tile {min-width:0;padding:7px;background:var(--paper);border:1px solid var(--line);border-radius:8px;overflow-wrap:anywhere;}
+  #courtside-layout-demo .cs-group-label {background:color-mix(in srgb,var(--nav) 8%,var(--paper));border-color:transparent;display:flex;justify-content:center;}
+  #courtside-layout-demo .cs-group-label .cs-pick,#courtside-layout-demo .cs-group-label > b {font-size:12px;letter-spacing:.045em;color:var(--soft);}
+  #courtside-layout-demo .cs-board-canvas {--step:68px;}
+  #courtside-layout-demo .cs-live-tile > b {display:block;margin-bottom:4px;color:var(--ink);}
+  #courtside-layout-demo .cs-live-tile .cs-content {margin:0;}
+  #courtside-layout-demo .cs-live-tile .cs-live-grid + .cs-live-grid {margin-top:6px;}
+  #courtside-layout-demo .cs-live-grid.cs-deep {--unit:35px;font-size:12px;}
+  #courtside-layout-demo .cs-live-grid.cs-deep .cs-live-tile {padding:4px;}
+  #courtside-layout-demo .cs-game-nav .cs-live-tile {display:grid;align-items:stretch;padding:0;border:0;background:none;}
+  #courtside-layout-demo .cs-game-tab {padding:4px;font-size:12px;white-space:normal;overflow-wrap:anywhere;}
+  #courtside-layout-demo .cs-demo-action {width:100%;text-align:left;padding:5px;white-space:normal;font-size:12px;}
+  #courtside-layout-demo .cs-live-tile.is-opening {padding:0;border:0;background:none;}
+  #courtside-layout-demo .cs-title-chip {font-size:12px;}
+  #courtside-layout-demo .cs-return {margin-top:8px;}
+  @media (max-width:500px) {
+    #courtside-layout-demo .cs-body {padding:9px;}
+    #courtside-layout-demo .cs-header {padding:10px;gap:7px;}
+    #courtside-layout-demo .cs-header-title {display:none;}
+    #courtside-layout-demo .cs-grid {--step:62px;}
+    #courtside-layout-demo .cs-toolbar label {flex:1 1 104px;}
+    #courtside-layout-demo .cs-fields input {width:55px;}
+  }
+</style>
+<script>
+(() => {
+  const demo = document.getElementById('courtside-layout-demo');
+  const get = selector => demo.querySelector(selector);
+  const board = get('.cs-grid');
+  const pageSelect = get('#cs-page');
+  const scopeSelect = get('#cs-scope');
+  const fields = [...demo.querySelectorAll('[data-field]')];
+  const status = message => { get('.cs-status').textContent = message; };
+  const tile = (id, title, values, narrow, wide, inside) => ({id, title, values, narrow, wide, inside});
+  const pages = {
+    Board: {
+      'Board panels': [
+        tile('home', 'Our Team', ['30s · 1/3', '60s · 0/1', 'Q2 fouls · 3', 'FT · 4–5', ['#11', '#22', '#24', '#33', '#45']], [0,0,4,2], [0,0,3,2], 'Our Team · panels'),
+        tile('away', 'Opponent', ['30s · 2/3', '60s · 0/1', 'Q2 fouls · 4', 'FT · 2–4', ['#1', '#5', '#13', '#30', '#44']], [0,2,4,2], [3,0,3,2], 'Opponent · panels'),
+        tile('plays', 'Choose a play', ['Point Sets', 'Rub', 'Rip 1', 'Elbow', 'Drag'], [0,4,4,1], [0,2,4,1], 'Play area'),
+        tile('quarter', 'Game controls', ['Recording · Q2', 'View results', 'Undo'], [0,5,4,1], [4,2,2,1], 'Game controls'),
+      ],
+      'Our Team · counters': [
+        tile('timeout', 'Timeouts', ['30 sec · *1/3', '60 sec · *0/1'], [0,0,2,2], [0,0,3,2], 'Our Team · timeout controls'),
+        tile('fouls', 'Team fouls', ['Q2', '*3'], [2,0,2,1], [3,0,3,1]),
+        tile('free', 'Free throws', ['*4–5'], [2,1,2,1], [3,1,3,1]),
+      ],
+      'Opponent · counters': [
+        tile('timeout', 'Timeouts', ['30 sec · *2/3', '60 sec · *0/1'], [0,0,2,2], [0,0,3,2], 'Opponent · timeout controls'),
+        tile('fouls', 'Team fouls', ['Q2', '*4'], [2,0,2,1], [3,0,3,1]),
+        tile('free', 'Free throws', ['*2–4'], [2,1,2,1], [3,1,3,1]),
+      ],
+      'Our Team · timeout controls': [
+        tile('30', '30-second', ['−', '*1 / 3', '+'], [0,0,2,1], [0,0,3,1]),
+        tile('60', '60-second', ['−', '*0 / 1', '+'], [2,0,2,1], [3,0,3,1]),
+      ],
+      'Opponent · timeout controls': [
+        tile('30', '30-second', ['−', '*2 / 3', '+'], [0,0,2,1], [0,0,3,1]),
+        tile('60', '60-second', ['−', '*0 / 1', '+'], [2,0,2,1], [3,0,3,1]),
+      ],
+      'Play sections': [
+        tile('point', 'Point', ['Push', 'Wave Through', 'Wing Entry', 'DHO'], [0,0,2,2], [0,0,2,2], 'Point · play buttons'),
+        tile('sets', 'Point Sets', ['Rip 1', 'Rip 2', 'Strong', 'Elbow', 'Rub', 'Under Zoom'], [2,0,2,2], [2,0,2,2], 'Point Sets · play buttons'),
+        tile('drag', 'Drag', ['Choose result'], [0,2,2,1], [4,0,2,1]),
+        tile('transition', 'Transition', ['Choose result'], [2,2,2,1], [4,1,2,1]),
+      ],
+      'Point Sets · play buttons': [],
+      'Point · play buttons': [],
+    },
+    'Play result': {'Result popup': [], 'Result buttons': []},
+    'Player details': {'Player popup': [], 'Personal foul controls': [], 'Free throw controls': []},
+    Overview: {'Overview panels': [], 'Summary tiles': [], 'Overview filters': [], 'Play breakdown': []},
+    'Shot tracker': {'Shot tracker panels': [], 'Team selector': [], 'Medal counters': [], 'Gold controls': [], 'Silver controls': [], 'Bronze controls': []},
+    'Game header': {'Header buttons': []},
+    Entries: {'Entries page': [
+      tile('filters','Filters',['Whole game','Both teams'],[0,0,4,1],[0,0,6,1]),
+      tile('entries','Recent entries',['Q2 · Rub · 2 Make Assist','Q2 · Drag · Out of bounds'],[0,1,4,2],[0,1,6,2]),
+    ]},
+  };
+  const equalTiles = (rows, columns, width) => rows.map(([title, values], i) => {
+    const position = [i % columns * width, Math.floor(i / columns), width, 1];
+    return tile(String(i), title, values, columns === 3 ? [i % 2 * 2, Math.floor(i / 2), 2, 1] : position,
+      columns === 2 ? [i % 2 * 3, Math.floor(i / 2), 3, 1] : position);
+  });
+  const fullRow = (id,title,values,row,inside) => tile(id,title,values,[0,row,4,1],[0,row,6,1],inside);
+  const steps = (minus, count, plus) => [
+    tile('minus',minus,[],[0,0,1,1],[0,0,2,1]),
+    tile('count',count,[],[1,0,2,1],[2,0,2,1]),
+    tile('plus',plus,[],[3,0,1,1],[4,0,2,1]),
+  ];
+  const groups = ['Our Team','Opponent'];
+  for (const [i,team] of groups.entries()) {
+    pages.Board[team + ' · panels'] = [
+      fullRow('counters','Team counters',['Timeouts','Team fouls','Free throws'],0,team + ' · counters'),
+      fullRow('players','Roster',[i ? ['#1','#5','#13','#30','#44'] : ['#11','#22','#24','#33','#45']],1,team + ' · roster'),
+    ];
+    pages.Board[team + ' · roster'] = equalTiles((i ? [1,5,13,30,44] : [11,22,24,33,45]).map((number,index) => [
+      '#' + number, ['PF · ' + (index % 3), index === 1 ? 'FT · 2–2' : 'FT · 0–0'],
+    ]), 3, 2);
+    for (const [j,limit] of [30,60].entries()) {
+      const count = limit === 30 ? i+1 : 0;
+      const gridName = team + ' · ' + limit + 's stepper';
+      pages.Board[team + ' · timeout controls'][j].inside = gridName;
+      pages.Board[gridName] = steps('−',count + '/' + (limit === 30 ? 3 : 1),'+');
+    }
+  }
+  pages.Board['Play area'] = [
+    fullRow('tabs','Section tabs',['Section 1','Section 2','Section 3'],0,'Section tabs'),
+    fullRow('categories','Categories and actions',['Point','Point Sets','Drag','Transition'],1,'Play sections'),
+  ];
+  pages.Board['Section tabs'] = equalTiles(['Section 1','Section 2','Section 3'].map(name => [name,[]]),3,2);
+  pages.Board['Section 2 · categories and plays'] = equalTiles([['Wheel',[]],['Diamond',[]],['Drag',[]]],3,2);
+  pages.Board['Section 3 · categories and plays'] = equalTiles([['Box C',[]],['4 Side',[]],['Box C2',[]]],3,2);
+  pages.Board['Game controls'] = equalTiles([['Quarter',['Q1','*Q2','Q3','Q4']],['View results',['Whole game']],['Undo',[]],['Success rules',[]]],2,2);
+  pages.Board['Point · play buttons'] = equalTiles(['Push','Wave Through','Wing Entry','DHO'].map(name => [name, []]), 2, 2);
+  pages.Board['Point Sets · play buttons'] = equalTiles(['Rip 1','Rip 2','Strong','Elbow','Rub','Under Zoom'].map(name => [name, []]), 3, 2);
+  pages['Game header']['Header buttons'] = ['Board','Overview','Entries','Shot tracker','PPP Calc','Setup file','Export','More'].map((name,i) =>
+    tile(String(i),name,[],[i%4,Math.floor(i/4),1,1],[i%6,Math.floor(i/6),1,1]));
+  for (const [name, details] of [
+    ['PPP Calc',[['Points','45'],['FGA','42'],['OREB','8'],['TO','12'],['FTA','14'],['Points per possession','0.86']]],
+    ['Setup file',[['Setup profile','Home playbook'],['Import setup','CSV or JSON'],['Save profile','On this iPad'],['Export setup','Download']]],
+    ['Export',[['Game backup','JSON'],['Game results','CSV']]],
+    ['More',[['Rename game','Our Team vs. Opponent'],['Success rules','Edit'],['Get app link','Copy']]],
+  ]) {
+    pages[name] = { Controls: equalTiles(details.map(([label,value]) => [label,[value]]),2,2) };
+  }
+  pages['Play result']['Result popup'] = [
+    fullRow('title','Play name',['Rub · Point Sets'],0),
+    fullRow('results','Choose a result',['Makes','Misses','Turnovers','Fouls'],1,'Result buttons'),
+  ];
+  pages['Play result']['Result buttons'] = equalTiles([
+    '2 Make Solo','3 Make Solo','2 Miss Open','3 Miss Open','2 Make Assist','3 Make Assist',
+    '2 Miss Contested','3 Miss Contested','Forced TO','Unintentional TO','Earned Foul','Lucky Foul',
+  ].map(name => [name, []]), 2, 2);
+  pages['Player details']['Player popup'] = [
+    fullRow('name','Player number',['#22 · Our Team'],0),
+    fullRow('fouls','Personal fouls',['Q2 · 1'],1,'Personal foul controls'),
+    fullRow('free','Free throws',['2–2'],2,'Free throw controls'),
+  ];
+  pages['Player details']['Personal foul controls'] = steps('−','1','+');
+  pages['Player details']['Free throw controls'] = equalTiles([['FT made',['*2']],['FT missed',['*0']]],2,2);
+  pages.Overview['Overview panels'] = [
+    fullRow('filters','Filters',['Team','Quarter'],0,'Overview filters'),
+    fullRow('summary','Game totals',['Calls','Points','Turnovers'],1,'Summary tiles'),
+    fullRow('breakdown','Play results',['Rub','Drag'],2,'Play breakdown'),
+  ];
+  pages.Overview['Overview filters'] = equalTiles([['Team',['Our Team']],['Quarter',['Whole game']],['Section',['All sections']],['Find a play',[]]],2,2);
+  pages.Overview['Play breakdown'] = equalTiles([['Rub',['8 calls','5 makes','2 TO']],['Drag',['5 calls','3 makes','1 TO']]],2,2);
+  pages.Overview['Summary tiles'] = equalTiles([
+    ['Calls',['*28']], ['Points',['*31']], ['Turnovers',['*5']],
+    ['2-point makes',['*8']], ['3-point makes',['*5']], ['Fouls earned',['*3']],
+  ], 3, 2);
+  pages['Shot tracker']['Shot tracker panels'] = [
+    fullRow('teams','Team selector',groups,0,'Team selector'),
+    fullRow('medals','Shot selection',['Gold','Silver','Bronze'],1,'Medal counters'),
+  ];
+  pages['Shot tracker']['Team selector'] = equalTiles(groups.map(name => [name,[]]),2,2);
+  pages['Shot tracker']['Medal counters'] = equalTiles([['Gold',['*8']],['Silver',['*5']],['Bronze',['*2']]], 3, 2)
+    .map(item => ({...item, inside:item.title + ' controls'}));
+  for (const [name,count] of [['Gold','8'],['Silver','5'],['Bronze','2']]) {
+    pages['Shot tracker'][name + ' controls'] = steps('−',count,'+');
+  }
+
+  // The main board's large background panels share one editor canvas.
+  // Each panel opens its own focused canvas for the controls inside it.
+  pages.Board['Board layout'] = [
+    tile('home','Our Team',['Timeouts','Team fouls','Free throws','Roster'],[0,0,2,3],[0,0,3,3],'Our Team · panels'),
+    tile('away','Opponent',['Timeouts','Team fouls','Free throws','Roster'],[2,0,2,3],[3,0,3,3],'Opponent · panels'),
+    tile('quarter','Game controls',['Quarter · Q2','View results','Undo'],[0,7,2,1],[0,7,2,1],'Game controls'),
+    tile('playarea','Play area',['Section tabs','Play categories','Drag · Transition · Extra'],[0,3,4,4],[0,3,6,4],'Play area'),
+    tile('shottracker','Shot tracker',['Team medals · Gold · Silver · Bronze'],[2,7,2,1],[2,7,4,1],'Shot tracker panels'),
+  ];
+  pages.Board['Play area'] = [
+    tile('sections','Section tabs',['Section 1','Section 2','Section 3'],[0,0,4,1],[0,0,6,1],'Section tabs'),
+    tile('section1','Section 1',['Categories'],[0,1,2,2],[0,1,2,2],'Section 1 · categories'),
+    tile('section2','Section 2',['Categories'],[2,1,2,2],[2,1,2,2],'Section 2 · categories'),
+    tile('section3','Section 3',['Categories'],[0,3,2,2],[4,1,2,2],'Section 3 · categories'),
+    tile('drag-action','Drag',['Choose a result'],[2,3,1,1],[0,3,2,1],null),
+    tile('transition-action','Transition',['Choose a result'],[3,3,1,1],[2,3,2,1],null),
+    tile('extra-action','Extra',['Custom text entry'],[2,4,2,1],[4,3,2,1],null),
+  ];
+  pages.Board['Section 1 · categories'] = [
+    tile('point','Point',['6 plays'],[0,0,2,1],[0,0,2,1],'Point · play buttons'),
+    tile('pointsets','Point Sets',['7 plays'],[2,0,2,1],[2,0,2,1],'Point Sets · play buttons'),
+    tile('series','3 Series',['4 plays'],[0,1,2,1],[4,0,2,1],'3 Series · play buttons'),
+  ];
+  pages.Board['Section 2 · categories'] = [
+    tile('zone','Zone',['2 plays'],[0,0,2,1],[0,0,2,1],'Zone · play buttons'),
+    tile('blobs','BLOBS',['7 plays'],[2,0,2,1],[2,0,2,1],'BLOBS · play buttons'),
+  ];
+  pages.Board['Section 3 · categories'] = [
+    tile('slobs','SLOBS',['3 plays'],[0,0,2,1],[0,0,2,1],'SLOBS · play buttons'),
+    tile('pressbreak','Press Break',['3 plays'],[2,0,2,1],[2,0,2,1],'Press Break · play buttons'),
+  ];
+  for (const [name,plays] of [
+    ['3 Series',['3','3 Double','Head Tap','3 Curl']],
+    ['Zone',['Wheel','Diamond']],
+    ['BLOBS',['Color','5 Slice','4','1','Circle','Symba','Bunch']],
+    ['SLOBS',['Box C','4 Side','Box C2']],
+    ['Press Break',['3','3 Slice','3 Deep']],
+  ]) pages.Board[name + ' · play buttons'] = equalTiles(plays.map(play => [play,[]]),2,2);
+
+  const restored = window.openai?.widgetState?.privateContent;
+  let saved = restored?.version === 3 && restored.layouts ? restored.layouts : {};
+  let savedColumns = restored?.version === 3 && restored.columns ? restored.columns : {};
+  let draftColumns = structuredClone(savedColumns);
+  let draft = structuredClone(saved || {});
+  let orientation = window.courtsideDemoOrientation || (demo.clientWidth < 900 ? 'portrait' : 'landscape');
+  let page = 'Board', scope = 'Board layout', selected = 'home', preview = false, gesture = null;
+  let boardTrail = ['Board layout'];
+  let previewPage = 'Board', previewPlay = 'Rub', previewPlayer = '#22', previewTeam = 'Our Team';
+  let previewSection = 'Section 1', showOriginal = false;
+  const MAX_ROWS = 8;
+  const history = [];
+  const elements = new Map();
+  const records = () => pages[page]?.[scope] || [];
+  const gridId = (pageName = page, grid = scope) => [pageName,grid,orientation].join('/');
+  const columns = (pageName = page, grid = scope) => Number(draftColumns[gridId(pageName,grid)]) ||
+    (grid === 'Medal counters' ? 3 : orientation === 'portrait' ? 4 : 6);
+  const layoutKey = (pageName = page, grid = scope) => [pageName, grid, orientation, columns(pageName,grid)].join('/');
+  const getPositions = (layouts, pageName, grid) => {
+    const count = columns(pageName,grid);
+    if (layouts[layoutKey(pageName,grid)]) return layouts[layoutKey(pageName,grid)];
+    const items = pages[pageName]?.[grid];
+    if (!Array.isArray(items)) return {};
+    return Object.fromEntries(items.map((item,index) => {
+      if (grid === 'Medal counters' && count === 3) return [item.id,[index,0,1,2]];
+      const baseCols = orientation === 'portrait' ? 4 : 6;
+      const base = orientation === 'portrait' ? item.narrow : item.wide;
+      const width = Math.max(1,Math.min(count,Math.round(base[2]*count/baseCols)));
+      const x = Math.max(0,Math.min(count-width,Math.round(base[0]*count/baseCols)));
+      return [item.id,[x,base[1],width,base[3]]];
+    }));
+  };
+  const positions = () => getPositions(draft,page,scope);
+  const clone = value => structuredClone(value);
+  const plus = (tag, className, text) => {
+    const elem = document.createElement(tag);
+    if (className) elem.className = className;
+    if (text != null) elem.textContent = text;
+    return elem;
+  };
+  function options(select, values, current) {
+    select.replaceChildren(...(values || []).map(value => new Option(value, value, value === current, value === current)));
+  }
+  function valueChip(value) {
+    if (Array.isArray(value)) {
+      const group = plus('span','cs-roster');
+      group.append(...value.map(valueChip));
+      return group;
+    }
+    const text = String(value ?? '');
+    return plus('span', text.includes('*') ? 'cs-count' : '', text.replace('*',''));
+  }
+  function place(element,[x,y,w,h]) {
+    element.style.gridColumn = (x+1) + ' / span ' + w;
+    element.style.gridRow = (y+1) + ' / span ' + h;
+  }
+  function openPreviewPage(next) {
+    previewPage = next;
+    status('');
+    showSavedPreview();
+  }
+  function play(title) {
+    previewPlay = title;
+    openPreviewPage('Play result');
+  }
+  function previewButton(label, onClick, className = 'cs-demo-action') {
+    const button = plus('button',className,label);
+    button.type = 'button';
+    button.addEventListener('click',onClick);
+    return button;
+  }
+  function previewGrid(pageName, gridName, depth = 0) {
+    const gridItems = pages[pageName]?.[gridName];
+    if (!Array.isArray(gridItems)) return plus('div','cs-live-grid','');
+    const layout = getPositions(showOriginal ? {} : saved,pageName,gridName);
+    const isNav = pageName === 'Game header';
+    const className = depth === 0 ? 'cs-outer' : depth > 1 ? 'cs-deep' : '';
+    const grid = plus(isNav ? 'nav' : 'div','cs-live-grid ' + className);
+    grid.style.setProperty('--columns',columns(pageName,gridName));
+    grid.setAttribute('aria-label',gridName);
+    if (isNav) grid.classList.add('cs-game-nav');
+    const items = [...gridItems].sort((a,b) => {
+      const [ax,ay] = layout[a.id], [bx,by] = layout[b.id];
+      return ay - by || ax - bx;
+    });
+    for (const item of items) {
+      const panel = plus('div','cs-live-tile');
+      place(panel,layout[item.id]);
+      if (item.id.startsWith('group-')) panel.classList.add('cs-group-label');
+      if (isNav) {
+        const tab = previewButton(item.title, () => openPreviewPage(item.title),'cs-game-tab');
+        if (item.title === previewPage) tab.setAttribute('aria-current','page');
+        panel.append(tab);
+      } else if (item.inside) {
+        panel.append(plus('b','cs-title-chip',item.title));
+        if (depth === 0) {
+          panel.append(previewGrid(pageName,item.inside,depth+1));
+        } else {
+          const children = pages[pageName]?.[item.inside] || [];
+          const summary = plus('div','cs-content');
+          summary.append(...children.map(child => {
+            const details = (child.values || []).flat(Infinity).join(' · ').replaceAll('*','');
+            return plus('span','',details ? child.title + ' · ' + details : child.title);
+          }));
+          panel.append(summary);
+        }
+      } else {
+        const player = gridName.endsWith(' · roster') || item.kind === 'player';
+        const callsPlay = gridName.endsWith(' · play buttons') || gridName.endsWith(' · categories and plays') || gridName === 'Play sections' || item.kind === 'play';
+        const selectSection = gridName === 'Section tabs' || item.kind === 'section';
+        const selectCategory = item.kind === 'category';
+        const selectTeam = gridName === 'Team selector';
+        const isResult = gridName === 'Result buttons';
+        let choose;
+        if (player) choose = () => { previewPlayer = item.title; openPreviewPage('Player details'); };
+        if (callsPlay) choose = () => play(item.title);
+        if (selectTeam) choose = () => { previewTeam = item.title; showSavedPreview(); };
+        if (selectSection) choose = () => { previewSection = item.title; showSavedPreview(); };
+        if (selectCategory) choose = () => { previewSection = item.title; showSavedPreview(); };
+        if (isResult) choose = () => {
+          const logged = previewPlay + ' · ' + item.title;
+          openPreviewPage('Board');
+          status('Sample entry · ' + logged);
+        };
+        if (choose) {
+          panel.classList.add('is-opening');
+          const button = previewButton(item.title + (player ? ' · ' + item.values.join(' · ') : ''),choose);
+          if (selectTeam) button.setAttribute('aria-pressed',String(item.title === previewTeam));
+          if (selectSection) button.setAttribute('aria-pressed',String(item.title === previewSection));
+          panel.append(button);
+        } else {
+          const title = gridName === 'Result popup' && item.id === 'title' ? previewPlay : gridName === 'Player popup' && item.id === 'name' ? previewPlayer : item.title;
+          panel.append(plus('b','',title));
+          if ((item.values || []).length && title === item.title) {
+            const contents = plus('div','cs-content');
+            contents.append(...(item.values || []).map(valueChip));
+            panel.append(contents);
+          }
+        }
+      }
+      grid.append(panel);
+    }
+    return grid;
+  }
+  function showSavedPreview() {
+    const surface = get('.cs-game-preview');
+    const samplePage = pages[previewPage];
+    const title = previewPage === 'Board' ? 'Our Team vs. Opponent' : previewPage === 'Shot tracker' ? 'Shot tracker · ' + previewTeam : previewPage;
+    surface.replaceChildren(previewGrid('Game header','Header buttons'),plus('h3','cs-game-heading',title));
+    if (samplePage) {
+      surface.append(previewGrid(previewPage,previewPage === 'Board' ? 'Board layout' : Object.keys(samplePage)[0]));
+    }
+    if (previewPage === 'Play result' || previewPage === 'Player details') {
+      surface.append(previewButton('Back to board',() => openPreviewPage('Board'),'cs-return'));
+    }
+  }
+  function build() {
+    options(pageSelect, Object.keys(pages), page);
+    const availableScopes = Object.keys(pages[page] || {});
+    if (!availableScopes.includes(scope)) {
+      scope = page === 'Board' && availableScopes.includes(boardTrail.at(-1))
+        ? boardTrail.at(-1)
+        : page === 'Board' ? 'Board layout' : availableScopes[0];
+      if (page === 'Board') boardTrail = [scope];
+    }
+    const scopeOptions = page === 'Board' ? [scope] : availableScopes;
+    options(scopeSelect, scopeOptions, scope);
+    get('.cs-scope-label').hidden = page === 'Board';
+    get('.cs-back').hidden = page !== 'Board' || boardTrail.length < 2;
+    const columnSelect = get('#cs-columns');
+    get('.cs-columns-label').firstChild.textContent = (page === 'Board' ? 'Canvas columns ' : scope + ' columns ');
+    options(columnSelect,Array.from({length:11},(_,index)=>String(index+2)),String(columns()));
+    const path = page === 'Board' ? boardTrail : [scope];
+    get('.cs-location').replaceChildren(...path.flatMap((crumb,index) => {
+      const parts = [];
+      if (index) parts.push(plus('span','', '›'));
+      parts.push(plus('span',index === path.length-1 ? 'cs-crumb-current' : '',crumb));
+      return parts;
+    }));
+    get('.cs-body').classList.toggle('is-preview', preview);
+    get('.cs-body').classList.toggle('cs-portrait',orientation === 'portrait');
+    demo.querySelectorAll('[data-orientation]').forEach(button => button.setAttribute('aria-pressed',String(button.dataset.orientation === orientation)));
+    get('.cs-toolbar').hidden = preview;
+    get('.cs-inspector').hidden = preview;
+    get('.cs-caption').hidden = preview;
+    board.hidden = preview;
+    get('.cs-game-preview').hidden = !preview;
+    get('.cs-compare').hidden = !preview;
+    get('.cs-save').textContent = preview ? 'Back to editor' : 'Save & preview';
+    get('.cs-header-title').textContent = preview ? 'Saved layout preview' : 'Layout editor';
+    if (preview) { showSavedPreview(); return; }
+    board.replaceChildren(plus('div','cs-grid-lines'));
+    elements.clear();
+    records().forEach(item => {
+      const panel = plus('section','cs-tile');
+      panel.dataset.tile = item.id;
+      if (item.kind) panel.dataset.kind = item.kind;
+      if (item.id.startsWith('group-')) panel.classList.add('cs-group-label');
+      const heading = plus('div','cs-tile-head');
+      if (!preview) heading.append(handle('move', item));
+      const label = plus(preview ? 'b' : 'button','cs-pick',item.title);
+      if (!preview) {
+        label.type = 'button';
+        label.addEventListener('click', () => { selected = item.id; paint(); });
+      }
+      heading.append(label);
+      panel.append(heading);
+      if ((item.values || []).length) {
+        const content = plus('div','cs-content');
+        content.append(...(item.values || []).map(valueChip));
+        panel.append(content);
+      }
+      if (!preview) panel.append(handle('resize', item));
+      elements.set(item.id,panel);
+      board.append(panel);
+    });
+    paint();
+  }
+  function handle(action, item) {
+    const button = plus('button',action === 'move' ? 'cs-grip' : 'cs-resize',action === 'move' ? '⠿' : null);
+    button.type = 'button';
+    button.setAttribute('aria-label',(action === 'move' ? 'Move ' : 'Resize ') + item.title);
+    button.addEventListener('pointerdown', event => begin(event,item.id,action));
+    button.addEventListener('pointermove', move);
+    button.addEventListener('pointerup', finish);
+    button.addEventListener('pointercancel', cancel);
+    button.addEventListener('lostpointercapture', cancel);
+    button.addEventListener('keydown', event => {
+      const offset = {ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];
+      if (!offset) return;
+      event.preventDefault();
+      selected = item.id;
+      const base = positions();
+      update(base, item.id, getChange(item.id,base[item.id], action, ...offset));
+      record(base);
+    });
+    return button;
+  }
+  function paint() {
+    const layout = positions();
+    if (!Object.keys(layout).length) return;
+    board.style.setProperty('--columns',columns());
+    board.classList.toggle('cs-board-canvas',page === 'Board');
+    const height = Math.max(...Object.values(layout).map(([,y,,h]) => y+h));
+    board.style.setProperty('--rows',height + (preview ? 0 : 1));
+    get('.cs-fit').textContent = 'iPad fit · ' + height + ' / ' + MAX_ROWS + ' rows';
+    for (const [id, elem] of elements) {
+      place(elem,layout[id]);
+      elem.classList.toggle('cs-single',layout[id][2] === 1);
+      elem.classList.toggle('is-selected',!preview && selected === id);
+      elem.classList.toggle('is-moving',gesture?.id === id);
+      elem.querySelector('button.cs-pick')?.setAttribute('aria-pressed', String(selected === id));
+    }
+    const item = records().find(item => item.id === selected);
+    if (!item || !layout[selected]) return;
+    const [x,y,w,h] = layout[selected];
+    get('.cs-selected').textContent = item.title;
+    get('.cs-enter').hidden = !item.inside;
+    fields.forEach((field,index) => {
+      if (index === 0) field.max = columns()-w+1;
+      if (index === 1) field.max = MAX_ROWS-h+1;
+      if (index === 2) { field.min = 1; field.max = columns()-x; }
+      if (index === 3) { field.min = 1; field.max = MAX_ROWS-y; }
+      field.value = [x+1,y+1,w,h][index];
+    });
+    get('.cs-undo').disabled = !history.some(item => item.key === layoutKey());
+  }
+  const collides = ([x,y,w,h],[a,b,c,d]) => x < a+c && a < x+w && y < b+d && b < y+h;
+  const clamp = (value,min,max) => Math.max(min,Math.min(max,value));
+  function getChange(id,[x,y,w,h],action,dx,dy) {
+    if (action === 'resize') return [x,y,clamp(w+dx,1,columns()-x),clamp(h+dy,1,Math.min(6,MAX_ROWS-y))];
+    return [clamp(x+dx,0,columns()-w),clamp(y+dy,0,MAX_ROWS-h),w,h];
+  }
+  function update(base,id,changed) {
+    const next = { [id]: changed };
+    const others = Object.keys(base).filter(key => key !== id).sort((a,b) => base[a][1]-base[b][1] || base[a][0]-base[b][0]);
+    for (const key of others) {
+      let rect = [...base[key]];
+      const conflicts = candidate => Object.values(next).some(occupied => collides(candidate,occupied));
+      if (conflicts(rect)) {
+        let found = null;
+        for (let row = Math.max(rect[1],changed[1]); row <= MAX_ROWS-rect[3] && !found; row++) {
+          for (let col = 0; col <= columns()-rect[2]; col++) {
+            const candidate = [col,row,rect[2],rect[3]];
+            if (!conflicts(candidate)) { found = candidate; break; }
+          }
+        }
+        if (!found) {
+          status('That change would push content beyond the iPad fit area. Try a smaller cell or a different spot.');
+          paint();
+          return;
+        }
+        rect = found;
+      }
+      next[key] = rect;
+    }
+    draft[layoutKey()] = next;
+    paint();
+  }
+  function begin(event,id,action) {
+    if (gesture || event.button !== 0) return;
+    selected = id;
+    const rect = board.getBoundingClientRect();
+    const step = parseFloat(getComputedStyle(board).gridAutoRows);
+    gesture = { id, action, pointer: event.pointerId, base: clone(positions()), x:event.clientX-rect.left, y:event.clientY-rect.top, dx:0,dy:0, step, width:rect.width/columns() };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    paint();
+  }
+  function move(event) {
+    if (gesture?.pointer !== event.pointerId) return;
+    const rect = board.getBoundingClientRect();
+    const active = gesture;
+    const dx = Math.round((event.clientX - rect.left - active.x) / active.width);
+    const dy = Math.round((event.clientY - rect.top - active.y) / active.step);
+    if (dx === active.dx && dy === active.dy) return;
+    active.dx = dx;
+    active.dy = dy;
+    update(active.base, active.id, getChange(active.id,active.base[active.id],active.action,dx,dy));
+  }
+  function record(base) {
+    if (Object.keys(base).every(id => base[id].join() === positions()[id].join())) return;
+    history.push({key:layoutKey(),base:clone(base)});
+    const item = records().find(item => item.id === selected);
+    const [x,y,w,h] = positions()[selected];
+    status(item.title + ' · column ' + (x+1) + ', row ' + (y+1) + ' · ' + w + ' × ' + h);
+    paint();
+  }
+  function finish(event) {
+    if (gesture?.pointer !== event.pointerId) return;
+    const base = gesture.base;
+    gesture = null;
+    record(base);
+    paint();
+  }
+  function cancel(event) {
+    if (gesture?.pointer !== event.pointerId) return;
+    draft[layoutKey()] = gesture.base;
+    gesture = null;
+    paint();
+  }
+  function openScope(value, push = true) {
+    scope = value;
+    if (page === 'Board') {
+      if (push) {
+        if (boardTrail.at(-1) !== value) boardTrail.push(value);
+      } else boardTrail = [value];
+    }
+    selected = records()[0].id;
+    status('');
+    build();
+  }
+  pageSelect.addEventListener('change', () => {
+    page = pageSelect.value;
+    openScope(page === 'Board' ? 'Board layout' : Object.keys(pages[page])[0],false);
+  });
+  scopeSelect.addEventListener('change', () => openScope(scopeSelect.value,false));
+  get('.cs-back').addEventListener('click', () => {
+    if (page !== 'Board' || boardTrail.length < 2) return;
+    boardTrail.pop();
+    scope = boardTrail.at(-1);
+    selected = records()[0].id;
+    status('');
+    build();
+  });
+  get('#cs-columns').addEventListener('change',event => {
+    const count = clamp(Number(event.target.value),2,12);
+    const oldCount = columns();
+    const oldLayout = clone(positions());
+    draftColumns[gridId()] = count;
+    const next = {};
+    for (const [id,original] of Object.entries(oldLayout)) {
+      const rect = [...original];
+      const [x,y,w,h] = rect;
+      rect[2] = Math.min(w,count);
+      rect[0] = Math.min(x,count-rect[2]);
+      let candidate = rect;
+      while (Object.values(next).some(other=>collides(candidate,other))) {
+        candidate = [0,candidate[1]+1,candidate[2],candidate[3]];
+        if (candidate[1]+candidate[3] > MAX_ROWS) {
+          draftColumns[gridId()] = oldCount;
+          event.target.value = String(oldCount);
+          status('That column count would make this page too tall for an iPad screen.');
+          build();
+          return;
+        }
+      }
+      next[id] = candidate;
+    }
+    draft[layoutKey()] = next;
+    status(count + ' columns · cells may be 1 column wide');
+    build();
+  });
+  get('.cs-enter').addEventListener('click', () => openScope(records().find(item => item.id === selected).inside,true));
+  get('.cs-save').addEventListener('click', () => {
+    preview = !preview;
+    if (preview) {
+      saved = clone(draft);
+      showOriginal = false;
+      get('.cs-compare').textContent = 'Show original layout';
+      previewPage = page === 'Game header' ? 'Board' : page;
+      savedColumns = clone(draftColumns);
+      window.courtsideDemoLayout = {layouts:saved,columns:savedColumns};
+      window.dispatchEvent?.(new Event('courtside:layout-saved'));
+      window.openai?.setWidgetState?.({modelContent:{page,grid:scope,columns:columns()},privateContent:{version:3,layouts:saved,columns:savedColumns}})?.catch(() => {});
+      status('Sample game · saved layout');
+    } else status('');
+    build();
+  });
+  get('.cs-compare').addEventListener('click', () => {
+    showOriginal = !showOriginal;
+    get('.cs-compare').textContent = showOriginal ? 'Show saved layout' : 'Show original layout';
+    status(showOriginal ? 'Sample game · original layout' : 'Sample game · saved layout');
+    showSavedPreview();
+  });
+  get('.cs-undo').addEventListener('click', () => {
+    const index = history.findLastIndex(item => item.key === layoutKey());
+    if (index < 0) return;
+    const [item] = history.splice(index,1);
+    draft[item.key] = item.base;
+    status('Last layout change undone.');
+    paint();
+  });
+  fields.forEach((field,index) => field.addEventListener('change', () => {
+    const base = positions();
+    const next = [...base[selected]];
+    const value = field.valueAsNumber;
+    if (!Number.isFinite(value)) { paint(); return; }
+    const minima = [1,1,1,1];
+    next[index] = clamp(Math.round(value),minima[index],Number(field.max)) - (index < 2 ? 1 : 0);
+    update(base,selected,next);
+    record(base);
+  }));
+  demo.querySelectorAll('[data-orientation]').forEach(button => button.addEventListener('click', () => {
+    if (orientation === button.dataset.orientation) return;
+    if (gesture) draft[layoutKey()] = gesture.base;
+    gesture = null;
+    orientation = button.dataset.orientation;
+    window.courtsideDemoOrientation = orientation;
+    window.dispatchEvent?.(new Event('courtside:orientation-change'));
+    status(preview ? (showOriginal ? 'Sample game · original layout' : 'Sample game · saved layout') : '');
+    build();
+  }));
+  get('.cs-return-app').addEventListener('click', () => document.dispatchEvent?.(new Event('courtside:exit-editor')));
+  window.addEventListener?.('courtside:enter-editor', () => {
+    orientation = window.courtsideDemoOrientation || (demo.clientWidth < 900 ? 'portrait' : 'landscape');
+    preview = false;
+    build();
+  });
+  build();
+})();
+</script>
+<script>
+(() => {
+  const app = document.getElementById('cs-board-app');
+  const editorShell = document.getElementById('cs-editor-shell');
+  const canvas = document.getElementById('cs-app-canvas');
+  if (!app || !editorShell || !canvas) return;
+  const resultOptions = [
+    '2 Point Make Solo','3 Point Make Solo',
+    '2 Point Miss Open','3 Point Miss Open',
+    '2 Point Make Assist','3 Point Make Assist',
+    '2 Point Miss Contested','3 Point Miss Contested',
+    'Forced Turnover','Unintentional Turnover',
+    'Earned Foul','Lucky Foul',
+  ];
+  const playsBySection = {
+    1: {'Point':['Push','Wave Through','Come Here','Wing Entry','DHO','Wing DHO'], 'Point Sets':['Rip 1','Rip 2','Rip 3','Strong','Elbow','Rub','Under Zoom'], '3 Series':['3','3 Double','Head Tap','3 Curl']},
+    2: {'Zone':['Wheel','Diamond'], 'BLOBS':['Color','5 Slice','4','1','Circle','Symba','Bunch']},
+    3: {'SLOBS':['Box C','4 Side','Box C2'], 'Press Break':['3','3 Slice','3 Deep']},
+  };
+  const model = {
+    quarter:2, screen:'board', section:'1', category:'Point', activePlay:'', gameActive:true,
+    totals:{points:34,turnovers:5},
+    team:{home:{score:18,to30:1,to60:0,fouls:3,ftm:4,fta:5},away:{score:16,to30:2,to60:0,fouls:4,ftm:2,fta:4}},
+    playerFouls:{'home-11':0,'home-22':1,'home-24':2,'home-33':0,'home-45':1,'away-1':1,'away-5':0,'away-13':2,'away-30':1,'away-44':0},
+    shots:{Blue:{gold:2,silver:2,bronze:1},White:{gold:3,silver:1,bronze:2}},
+    entries:[
+      {quarter:2,section:1,category:'Point Sets',play:'Rub',result:'2 Point Make Assist',time:'2:14 PM'},
+      {quarter:2,section:1,category:'Point',play:'DHO',result:'Forced Turnover',time:'2:13 PM'},
+    ], undo:[],
+  };
+  let orientation = window.courtsideDemoOrientation || (window.innerWidth < 900 ? 'portrait' : 'landscape');
+  const $ = (sel,root=app) => root.querySelector(sel);
+  const $$ = (sel,root=app) => [...root.querySelectorAll(sel)];
+  const make = (tag,className,text) => { const el=document.createElement(tag); if(className)el.className=className; if(text!=null)el.textContent=text; return el; };
+  const screenNames = {board:'board',result:'result',entries:'entries',overview:'overview',shots:'shots',extra:'extra'};
+  function setScreen(name) {
+    model.screen=name;
+    $$('.app-screen').forEach(screen => screen.hidden=screen.dataset.screen!==screenNames[name]);
+    if(name==='entries') renderEntries();
+    if(name==='overview') renderOverview();
+    if(name==='shots') renderShotsPage();
+  }
+  function defaultPositions(cols,mode) {
+    if(mode==='portrait') return {
+      home:[0,0,2,3],away:[2,0,2,3],playarea:[0,3,4,4],quarter:[0,7,2,1],shottracker:[2,7,2,1],
+    };
+    return {home:[0,0,3,3],away:[3,0,3,3],playarea:[0,3,6,4],quarter:[0,7,2,1],shottracker:[2,7,4,1]};
+  }
+  function applyBoardLayout() {
+    const mode=orientation;
+    const baseCols=mode==='portrait'?4:6;
+    const saved=window.courtsideDemoLayout;
+    const colKey='Board/Board layout/'+mode;
+    const cols=Number(saved?.columns?.[colKey])||baseCols;
+    const layoutKey='Board/Board layout/'+mode+'/'+cols;
+    const positions=saved?.layouts?.[layoutKey]||defaultPositions(cols,mode);
+    canvas.style.setProperty('--app-columns',cols);
+    canvas.classList.toggle('app-portrait',mode==='portrait');
+    canvas.classList.toggle('app-landscape',mode==='landscape');
+    for(const cell of $$('[data-layout-id]',canvas)){
+      const box=positions[cell.dataset.layoutId];
+      if(!box)continue;
+      const [x,y,w,h]=box;
+      cell.style.gridColumn=(x+1)+' / span '+w;
+      cell.style.gridRow=(y+1)+' / span '+h;
+    }
+    $$('[data-app-orientation]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.appOrientation===mode)));
+  }
+  function renderTeam() {
+    for(const side of ['home','away']){
+      const team=model.team[side];
+      const root=$('#cs-team-'+side);
+      $('.team-score',root).textContent=team.score;
+      $$('.mini-control',root).forEach(control=>{
+        const key=control.dataset.counter;
+        const value=team[key];
+        const cap=key==='to30'?3:key==='to60'?1:null;
+        if(key==='fouls')$('span',control).textContent='Team fouls · Q'+model.quarter;
+        const label=key==='to30'?value+' / 3':key==='to60'?value+' / 1':String(value);
+        $('b',control).textContent=label;
+        const [minus,plus]=control.querySelectorAll('button');
+        if(minus)minus.disabled=value<=0;
+        if(plus)plus.disabled=cap!=null&&value>=cap;
+      });
+      $$('.player-chip',root).forEach(chip=>{
+        const player=chip.dataset.player;
+        $('small b',chip).textContent=model.playerFouls[side+'-'+player]||0;
+        const [minus,plus]=chip.querySelectorAll('[data-pf-step]');
+        if(minus)minus.disabled=(model.playerFouls[side+'-'+player]||0)<=0;
+      });
+    }
+    $('#sum-points').textContent=model.team.home.score+model.team.away.score;
+    $('#sum-to').textContent=model.totals.turnovers;
+    $('#sum-fouls').textContent=model.team.home.fouls+model.team.away.fouls;
+    $$('.app-quarter [data-quarter]').forEach(button=>button.classList.toggle('is-active',Number(button.dataset.quarter)===model.quarter));
+    for(const row of $$('.medal-row')){
+      const team=row.dataset.team;
+      for(const medal of ['gold','silver','bronze']){
+        const span=[...row.children].find(el=>el.textContent.toLowerCase().startsWith(medal));
+        if(span){$('b',span).textContent=model.shots[team][medal]; const minus=$('[data-step="-1"]',span); if(minus)minus.disabled=model.shots[team][medal]<=0;}
+      }
+    }
+  }
+  function renderPlayArea() {
+    $$('.section-tabs [data-section]').forEach(button=>button.classList.toggle('is-active',button.dataset.section===model.section));
+    const groups=playsBySection[model.section];
+    const categories=Object.keys(groups);
+    if(!categories.includes(model.category))model.category=categories[0];
+    const categoryRoot=$('#cs-categories'); categoryRoot.replaceChildren();
+    categories.forEach(category=>{
+      const button=make('button','',category);button.type='button';button.dataset.category=category;
+      button.classList.toggle('is-active',category===model.category);categoryRoot.append(button);
+    });
+    const playRoot=$('#cs-plays');playRoot.replaceChildren();
+    (groups[model.category]||[]).forEach(play=>{
+      const button=make('button','',play);button.type='button';button.dataset.play=play;playRoot.append(button);
+    });
+  }
+  function renderEntries() {
+    const root=$('#cs-entries-list');root.replaceChildren();
+    if(!model.entries.length){root.append(make('p','', 'No entries yet.'));return;}
+    [...model.entries].reverse().slice(0,30).forEach(entry=>{
+      const row=make('div','entry-row');
+      const detail=make('span','',`Q${entry.quarter} · ${entry.category} · ${entry.play} · ${entry.result}`);
+      row.append(detail,make('small','',entry.time));root.append(row);
+    });
+  }
+  function renderOverview() {
+    const root=$('#cs-overview-list');root.replaceChildren();
+    const byPlay=new Map();
+    for(const entry of model.entries){
+      const key=entry.category+' · '+entry.play;
+      const group=byPlay.get(key)||new Map();group.set(entry.result,(group.get(entry.result)||0)+1);byPlay.set(key,group);
+    }
+    if(!byPlay.size)root.append(make('p','', 'No plays recorded yet.'));
+    for(const [name,results] of byPlay){
+      const row=make('div','overview-row');
+      row.append(make('strong','',name),make('span','',Array.from(results,([result,count])=>`${result} · ${count}`).join('  |  ')));
+      root.append(row);
+    }
+    const summary=$('#cs-overview-summary');summary.replaceChildren();
+    const made=model.entries.filter(e=>e.result.includes('Make')).length;
+    const to=model.entries.filter(e=>e.result.includes('Turnover')).length;
+    const fouls=model.entries.filter(e=>e.result.includes('Foul')).length;
+    for(const [label,value] of [['Entries',model.entries.length],['Made shots',made],['Turnovers',to],['Fouls earned',fouls]]){
+      const tile=make('span','',label+' · ');tile.append(make('b','',String(value)));summary.append(tile);
+    }
+  }
+  function renderShotsPage() {
+    const root=$('#cs-shots-full');root.replaceChildren();
+    for(const team of ['Blue','White']){
+      const panel=make('section','app-cell');panel.append(make('h2','',team));
+      const row=make('div','medal-row');row.dataset.team=team;
+      for(const medal of ['gold','silver','bronze']){
+        const cell=make('span','',medal[0].toUpperCase()+medal.slice(1)+' ');
+        cell.append(make('b','',String(model.shots[team][medal])));
+        for(const [step,label] of [[-1,'−'],[1,'+']]){const button=make('button','',label);button.type='button';button.dataset.shotTeam=team;button.dataset.medal=medal;button.dataset.step=step;cell.append(button);}
+        row.append(cell);
+      }
+      panel.append(row);root.append(panel);
+    }
+  }
+  function openResult(play,category='Action') {
+    model.activePlay=play;model.activeCategory=category;
+    $('#cs-result-title').textContent='Choose result';
+    $('#cs-result-context').textContent=`Q${model.quarter} · ${category} · ${play}`;
+    const root=$('#cs-result-grid');root.replaceChildren();
+    resultOptions.forEach(result=>{const button=make('button','',result);button.type='button';button.dataset.result=result;root.append(button);});
+    setScreen('result');
+  }
+  function addEntry(entry) {
+    const time=new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});
+    model.entries.push({...entry,quarter:model.quarter,time});
+  }
+  function submitResult(result) {
+    const points=result.startsWith('2 Point Make')?2:result.startsWith('3 Point Make')?3:0;
+    const turnover=result.includes('Turnover')?1:0;
+    const foul=result.includes('Foul')?1:0;
+    model.team.home.score+=points;
+    model.totals.turnovers+=turnover;
+    model.team.away.fouls+=foul;
+    addEntry({section:Number(model.section),category:model.activeCategory,play:model.activePlay,result,points,turnover,foul});
+    model.undo.push({type:'result',points,turnover,foul});
+    renderTeam();setScreen('board');
+  }
+  function undoLast() {
+    const action=model.undo.pop();if(!action)return;
+    if(action.type==='result'){
+      model.team.home.score-=action.points;model.totals.turnovers-=action.turnover;model.team.away.fouls-=action.foul;model.entries.pop();
+    } else if(action.type==='counter') model.team[action.side][action.key]=action.old;
+    else if(action.type==='pf') model.playerFouls[action.key]=action.old;
+    else if(action.type==='shot') model.shots[action.team][action.medal]=action.old;
+    else if(action.type==='extra') model.entries.pop();
+    renderTeam();if(model.screen==='entries')renderEntries();if(model.screen==='overview')renderOverview();if(model.screen==='shots')renderShotsPage();
+  }
+  function clickHandler(event) {
+    const button=event.target.closest('button');if(!button)return;
+    if(button.id==='cs-open-layout'){
+      app.hidden=true;editorShell.hidden=false;
+      window.dispatchEvent(new Event('courtside:enter-editor'));return;
+    }
+    if(button.dataset.appOrientation){orientation=button.dataset.appOrientation;window.courtsideDemoOrientation=orientation;applyBoardLayout();return;}
+    if(button.dataset.page){setScreen(button.dataset.page);return;}
+    if(button.dataset.back!==undefined){setScreen('board');return;}
+    if(button.dataset.quarter){model.quarter=Number(button.dataset.quarter);renderTeam();return;}
+    if(button.id==='cs-undo-entry'){undoLast();return;}
+    if(button.dataset.section){model.section=button.dataset.section;model.category=Object.keys(playsBySection[model.section])[0];renderPlayArea();return;}
+    if(button.dataset.category){model.category=button.dataset.category;renderPlayArea();return;}
+    if(button.dataset.result){submitResult(button.dataset.result);return;}
+    if(button.dataset.play){openResult(button.dataset.play,button.closest('.action-row')?'Action':model.category);return;}
+    if(button.hasAttribute('data-extra')){setScreen('extra');return;}
+    if(button.dataset.pfStep){
+      const player=button.closest('.player-chip'),team=button.closest('.team-cell').id.endsWith('home')?'home':'away';
+      const key=team+'-'+player.dataset.player,old=model.playerFouls[key]||0;
+      model.playerFouls[key]=Math.max(0,old+Number(button.dataset.pfStep));model.undo.push({type:'pf',key,old});renderTeam();return;
+    }
+    if(button.dataset.step&&button.closest('.mini-control')){
+      const control=button.closest('.mini-control'),team=button.closest('.team-counters').dataset.team,key=control.dataset.counter;
+      const old=model.team[team][key],cap=key==='to30'?3:key==='to60'?1:null;
+      model.team[team][key]=Math.max(0,Math.min(cap??99,old+Number(button.dataset.step)));
+      model.undo.push({type:'counter',side:team,key,old});renderTeam();return;
+    }
+    if(button.dataset.shotTeam&&button.dataset.medal){
+      const team=button.dataset.shotTeam,medal=button.dataset.medal,old=model.shots[team][medal];
+      model.shots[team][medal]=Math.max(0,old+Number(button.dataset.step));model.undo.push({type:'shot',team,medal,old});renderTeam();renderShotsPage();return;
+    }
+    if(button.dataset.medal&&button.dataset.step){
+      const team=button.closest('.medal-row').dataset.team,medal=button.dataset.medal,old=model.shots[team][medal];
+      model.shots[team][medal]=Math.max(0,old+Number(button.dataset.step));model.undo.push({type:'shot',team,medal,old});renderTeam();return;
+    }
+    if(button.dataset.action==='game-over'){
+      model.gameActive=!model.gameActive;button.textContent=model.gameActive?'Game stop':'Game start';return;
+    }
+  }
+  app.addEventListener('click',clickHandler);
+  $('#cs-extra-form').addEventListener('submit',event=>{
+    event.preventDefault();const text=$('#cs-extra-text').value.trim();if(!text)return;
+    addEntry({section:Number(model.section),category:'Extra',play:'Extra',result:text});model.undo.push({type:'extra'});$('#cs-extra-text').value='';setScreen('board');
+  });
+  document.addEventListener('courtside:exit-editor',()=>{
+    editorShell.hidden=true;app.hidden=false;applyBoardLayout();
+  });
+  window.addEventListener('courtside:layout-saved',applyBoardLayout);
+  window.addEventListener('courtside:orientation-change',()=>{orientation=window.courtsideDemoOrientation||orientation;applyBoardLayout();});
+  window.addEventListener('resize',()=>{if(!window.courtsideDemoOrientation){orientation=window.innerWidth<900?'portrait':'landscape';applyBoardLayout();}});
+  renderTeam();renderPlayArea();applyBoardLayout();
+})();
+</script>
