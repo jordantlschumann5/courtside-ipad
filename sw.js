@@ -1,5 +1,5 @@
-const CACHE = 'courtside-shell-v14';
-const ASSETS = ['./', './index.html', './styles.css?v=14', './app.js?v=14', './core.js?v=14', './setup.js?v=14', './overview.js?v=14', './storage.js?v=14', './calculator.js?v=14', './manifest.webmanifest', './icon.svg'];
+const CACHE = 'courtside-shell-v15';
+const ASSETS = ['./', './index.html', './styles.css?v=15', './app.js?v=15', './core.js?v=15', './setup.js?v=15', './overview.js?v=15', './storage.js?v=15', './calculator.js?v=15', './manifest.webmanifest', './icon.svg'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
