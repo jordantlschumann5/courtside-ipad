@@ -166,6 +166,7 @@ export function mountLayoutEditor(host, {pages,getDefault,onSave,onExit,renderPr
   let previewSection = '', showOriginal = false;
   // Real playbooks can include more tiles than the sample game.
   function rowLimit() {
+    if (page === 'Game header') return 1;
     const baseline = getDefault(page,scope,orientation).positions;
     return Math.max(8,...Object.values(baseline).map(([,y,,h])=>y+h),
       ...Object.values(positions()).map(([,y,,h])=>y+h));
@@ -173,6 +174,7 @@ export function mountLayoutEditor(host, {pages,getDefault,onSave,onExit,renderPr
   const history = [];
   const elements = new Map();
   const records = () => pages[page]?.[scope] || [];
+  const minColumns = () => page === 'Game header' ? records().length : 2;
   const selectedTile = () => records().find(item => item.id === selected);
   function nestedScope(item) {
     const destination = item?.insidePage || page;
@@ -337,7 +339,8 @@ export function mountLayoutEditor(host, {pages,getDefault,onSave,onExit,renderPr
     get('.cs-back').hidden = page !== 'Board' || boardTrail.length < 2;
     const columnSelect = get('#cs-columns');
     get('.cs-columns-label').firstChild.textContent = (page === 'Board' ? 'Canvas columns ' : scope + ' columns ');
-    options(columnSelect,Array.from({length:11},(_,index)=>String(index+2)),String(columns()));
+    const minimum = minColumns();
+    options(columnSelect,Array.from({length:13-minimum},(_,index)=>String(index+minimum)),String(columns()));
     const path = page === 'Board' ? boardTrail : [scope];
     get('.cs-location').replaceChildren(...path.flatMap((crumb,index) => {
       const parts = [];
@@ -580,7 +583,7 @@ export function mountLayoutEditor(host, {pages,getDefault,onSave,onExit,renderPr
     build();
   });
   get('#cs-columns').addEventListener('change',event => {
-    const count = clamp(Number(event.target.value),2,12);
+    const count = clamp(Number(event.target.value),minColumns(),12);
     const oldCount = columns();
     if (count === oldCount) return;
     const oldLayout = positions();

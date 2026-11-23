@@ -1,5 +1,5 @@
-import { mountLayoutEditor } from './layout-editor.js?v=21';
-import { createLayoutModel, applyStudioLayout, ipadOrientation } from './layout-model.js?v=21';
+import { mountLayoutEditor } from './layout-editor.js?v=23';
+import { createLayoutModel, applyStudioLayout, ipadOrientation } from './layout-model.js?v=23';
 import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, OUTCOME_GROUP_LABELS, outcomeGroup, gameOutcomes, getOutcome, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=16';
 import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=18';
 import { buildOverview } from './overview.js?v=16';
@@ -32,7 +32,7 @@ function currentLayoutDevice() { return window.innerWidth<=700?'phone':window.in
 function defaultPlacement(surface,index,total,device,colsOverride) {
   const cols=colsOverride||columnsForSurface(surface,device),half=Math.max(1,Math.floor(cols/2));
   const configs={
-    'board-main':{w:cols,h:[1,4,1,5][index]||2},'team-cards':{w:device==='phone'?cols:half,h:4},'team-interior':{w:cols,h:[1,2,3][index]||1},
+    'board-main':{w:cols,h:[4,1,5][index]||2},'team-cards':{w:device==='phone'?cols:half,h:4},'team-interior':{w:cols,h:[1,2,3][index]||1},
     'team-metrics':{w:Math.max(1,Math.floor(cols/3)),h:1},
     'board-sections':{w:Math.max(1,Math.floor(cols/3)),h:1},'board-categories':{w:device==='phone'?cols:Math.max(1,Math.floor(cols/3)),h:3},
     'team-roster':{w:device==='phone'?2:Math.max(1,Math.floor(cols/6)),h:1},'board-plays':{w:device==='phone'?2:Math.max(1,Math.floor(cols/4)),h:1},
@@ -40,7 +40,7 @@ function defaultPlacement(surface,index,total,device,colsOverride) {
     overview:{w:Math.max(1,Math.floor(cols/6)),h:1},'overview-details':{w:device==='phone'?cols:half,h:1},
   };
   const {w,h}=configs[surface]||{w:cols,h:1};
-  if(surface==='board-main')return [{x:1,y:1,w:cols,h:1},{x:1,y:2,w:cols,h:4},{x:1,y:6,w:cols,h:1},{x:1,y:7,w:cols,h:5}][index]||{x:1,y:7+index*2,w:cols,h:2};
+  if(surface==='board-main')return {x:1,y:[1,5,6][index]||1,w,h};
   if(surface==='team-interior')return {x:1,y:[1,2,4][index]||1,w:cols,h:[1,2,3][index]||1};
   if(surface==='team-metrics'){const metricWidth=Math.max(1,Math.floor(cols/3)),perRow=Math.max(1,Math.floor(cols/metricWidth));return {x:(index%perRow)*metricWidth+1,y:Math.floor(index/perRow)+1,w:Math.min(metricWidth,cols-(index%perRow)*metricWidth),h:1};}
   if(surface==='team-cards'){const teamWidth=Math.ceil(cols/2);return {x:index===0?1:cols-teamWidth+1,y:1,w:teamWidth,h};}
@@ -190,10 +190,10 @@ function overviewPage(game) {
 
 function renderGame() {
   const game = ui.game, entryCount = activeEvents(game).length;
-  return `${ui.view==='layout'?'':`<header class="app-header"><div class="brand"><span class="brand-mark">C</span><div><span class="brand-name">COURTSIDE</span><small>OFFLINE GAME TRACKER</small></div></div>
-    <div class="game-heading"><label class="sr-only" for="game-picker">Game</label><select id="game-picker" data-action="switch-game">${ui.games.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(item => `<option value="${item.id}" ${item.id === game.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><button class="header-add" data-action="new-game" title="New game">＋</button></div>
-    <div class="header-actions"><span class="local-badge"><span class="local-dot"></span>Saved locally</span>${ui.view==='layout'?'<button data-action="show-board" class="header-button">Back to board</button>':`<button data-action="show-board" class="header-button ${ui.view === 'board' ? 'selected' : ''}">Board</button><button data-action="show-overview" class="header-button ${ui.view === 'overview' ? 'selected' : ''}">Overview</button><button data-action="show-history" class="header-button ${ui.view === 'history' ? 'selected' : ''}">Entries (${entryCount})</button><button data-action="show-shots" class="header-button ${ui.view === 'shot-tracker' ? 'selected' : ''}">Shot tracker</button><button data-action="layout" class="header-button">Edit layout</button><button data-action="calculator" class="header-button">PPP Calc</button><button data-action="setup" class="header-button">Setup file</button><button data-action="export" class="header-button">Export</button><button data-action="more" class="header-button">More</button>`}</div>
-  </header>`}
+  return `<header class="app-header">
+    <div class="game-heading"><label class="sr-only" for="game-picker">Game</label><select id="game-picker" data-action="switch-game">${ui.games.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(item => `<option value="${item.id}" ${item.id === game.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><button class="header-add" data-action="new-game" title="New game" aria-label="New game">＋</button></div>
+    <nav class="header-actions" aria-label="Game tools"><button data-action="show-board" class="header-button ${ui.view === 'board' ? 'selected' : ''}">Board</button><button data-action="show-overview" class="header-button ${ui.view === 'overview' ? 'selected' : ''}">Overview</button><button data-action="show-history" class="header-button ${ui.view === 'history' ? 'selected' : ''}">Entries (${entryCount})</button><button data-action="show-shots" class="header-button ${ui.view === 'shot-tracker' ? 'selected' : ''}">Shot tracker</button><button data-action="layout" class="header-button">Edit layout</button><button data-action="calculator" class="header-button">PPP Calc</button><button data-action="setup" class="header-button">Setup file</button><button data-action="export" class="header-button">Export</button><button data-action="more" class="header-button">More</button></nav>
+  </header>
   ${renderGamePage(game,ui.view)}${renderDialog()}`;
 }
 
@@ -204,10 +204,13 @@ function renderGamePage(game,view) {
   const total = totals(game), entries = activeEvents(game);
   return `
   <main class="main-content board-page"><div class="board-main-grid bento-grid" data-layout-surface="board-main" style="--bento-columns:${layoutColumns(game,'board-main',currentLayoutDevice())}">
-    <div class="game-meta" data-layout-item="game-meta"${gridStyle(game,'board-main','game-meta',0,4)}><div><span class="section-eyebrow">${esc(game.date)} · ${entries.length} ENTRIES</span><h1>${esc(game.name)}</h1></div><div class="quarter-wrap"><span>Recording in</span><div class="quarter-group">${[1,2,3,4].map(number => `<button data-action="quarter" data-quarter="${number}" class="${game.quarter === number ? 'active' : ''}">Q${number}</button>`).join('')}</div></div></div>
-    <div class="team-grid bento-grid" data-layout-item="team-grid"${gridStyle(game,'board-main','team-grid',1,4)} data-layout-surface="team-cards" style="--bento-columns:${layoutColumns(game,'team-cards',currentLayoutDevice())}">${teamCard(game, 'home', total)}${teamCard(game, 'away', total)}</div>
-    <div class="utility-row" data-layout-item="utility-row"${gridStyle(game,'board-main','utility-row',2,4)}><div class="filter-group"><span>View results</span><div class="segmented compact"><button data-action="filter" data-filter="all" class="${ui.filter === 'all' ? 'active' : ''}">All</button>${[1,2,3,4].map(number => `<button data-action="filter" data-filter="${number}" class="${ui.filter === String(number) ? 'active' : ''}">Q${number}</button>`).join('')}</div></div><div class="utility-actions"><button data-action="undo" class="subtle" ${!entries.length ? 'disabled' : ''}>↶ Undo last input</button><button data-action="rules" class="subtle">Success rules</button></div></div>
-    <div data-layout-item="workspace"${gridStyle(game,'board-main','workspace',3,4)}>${dashboard(game)}</div>
+    <div class="team-grid bento-grid" data-layout-item="team-grid"${gridStyle(game,'board-main','team-grid',0,3)} data-layout-surface="team-cards" style="--bento-columns:${layoutColumns(game,'team-cards',currentLayoutDevice())}">${teamCard(game, 'home', total)}${teamCard(game, 'away', total)}</div>
+    <div class="utility-row" data-layout-item="utility-row"${gridStyle(game,'board-main','utility-row',1,3)}>
+      <div class="quarter-wrap"><span>Recording in</span><div class="quarter-group">${[1,2,3,4].map(number => `<button data-action="quarter" data-quarter="${number}" class="${game.quarter === number ? 'active' : ''}">Q${number}</button>`).join('')}</div></div>
+      <div class="filter-group"><span>View results</span><div class="segmented compact"><button data-action="filter" data-filter="all" class="${ui.filter === 'all' ? 'active' : ''}">All</button>${[1,2,3,4].map(number => `<button data-action="filter" data-filter="${number}" class="${ui.filter === String(number) ? 'active' : ''}">Q${number}</button>`).join('')}</div></div>
+      <div class="utility-actions"><button data-action="undo" class="subtle" ${!entries.length ? 'disabled' : ''}>↶ Undo last input</button><button data-action="rules" class="subtle">Success rules</button></div>
+    </div>
+    <div data-layout-item="workspace"${gridStyle(game,'board-main','workspace',2,3)}>${dashboard(game)}</div>
     </div>
     <footer>One-iPad mode · No server connection or Wi-Fi needed during the game · Export a backup after each game</footer>
   </main>`;
@@ -327,10 +330,14 @@ function openLayoutEditor(game) {
 
 function render() {
   if (ui.view === 'layout') return; // Preserve the editor while notifications clear.
+  const headerScroll = root.querySelector('.header-actions')?.scrollLeft || 0;
   root.innerHTML = ui.game ? renderGame() : renderWelcome();
   const message = ui.storageError ? `<div class="toast error" role="alert">${esc(ui.notice)}</div>` : ui.notice ? `<div class="toast" role="status">${esc(ui.notice)}</div>` : '';
   root.insertAdjacentHTML('beforeend', message);
-  if (ui.game) applyGameLayout(root,ui.game);
+  if (ui.game) {
+    applyGameLayout(root,ui.game);
+    root.querySelector('.header-actions').scrollLeft = headerScroll;
+  }
 }
 
 function download(filename, content, mime) { const blob = new Blob([content], { type: mime }), url = URL.createObjectURL(blob), anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; document.body.append(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); }

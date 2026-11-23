@@ -13,8 +13,8 @@ const headerButtons = [
   ['setup','Setup file'],['export','Export'],['more','More']
 ];
 const boardRoot = {
-  portrait: [[0,0,2,2],[2,0,2,2],[0,2,4,1],[0,3,4,2],[0,5,4,1]],
-  landscape: [[0,0,3,2],[3,0,3,2],[0,2,2,1],[2,2,4,2],[0,4,6,1]]
+  portrait: [[0,0,2,2],[2,0,2,2],[0,2,4,1],[0,3,4,2]],
+  landscape: [[0,0,3,2],[3,0,3,2],[0,2,2,1],[2,2,4,2]]
 };
 const teamCounters = {
   portrait: [[0,0,4,1],[0,1,2,1],[2,1,2,1]],
@@ -49,8 +49,7 @@ export function createLayoutModel(game,{activeTeam,section,outcomes,total,action
     tile('home',teamNames[0],['Timeouts','Team fouls','Free throws','Roster'],'Our Team · panels'),
     tile('away',teamNames[1],['Timeouts','Team fouls','Free throws','Roster'],'Opponent · panels'),
     tile('quarter','Game controls',['Quarter · Q' + game.quarter,'View results','Undo'],'Game controls'),
-    tile('playarea','Play area',['Section tabs','Play categories',contextTeam],'Play area'),
-    {...tile('shottracker','Shot tracker',['Team medals · Gold · Silver · Bronze'],'Shot tracker panels'),insidePage:'Shot tracker'}
+    tile('playarea','Play area',['Section tabs','Play categories',contextTeam],'Play area')
   ],{boxes:boardRoot});
 
   for (const [index,team] of ['home','away'].entries()) {
@@ -140,7 +139,8 @@ export function createLayoutModel(game,{activeTeam,section,outcomes,total,action
       tile('minus','−'),tile('count','Count'),tile('plus','+')
     ],{perRow:3});
   }
-  add('Game header','Header buttons','game-header',headerButtons.map(([id,label])=>tile(id,label)),{perRow:6});
+  add('Game header','Header buttons','game-header',headerButtons.map(([id,label])=>tile(id,label)),
+    {count:headerButtons.length,perRow:headerButtons.length});
   add('Entries','Entries page','entries-panels',[
     tile('filters','Filters',['Team','Type','Quarter']),tile('entries','Recent entries',[entries + ' saved entries'])
   ],{perRow:1});
@@ -159,6 +159,20 @@ export function createLayoutModel(game,{activeTeam,section,outcomes,total,action
 
   function resolve(grid,mode,saved) {
     if (!grid) return {columns:mode==='portrait'?4:6,positions:{}};
+    if (grid.key === 'game-header' && saved) {
+      const items = grid.items.map(({id})=>[id,saved.placements[id]]);
+      const columns = Math.max(grid.count,saved.columns);
+      // Keep the visual order from older headers that used more than one row.
+      items.sort(([,a],[,b])=>(a?.y ?? Infinity)-(b?.y ?? Infinity) || (a?.x ?? 0)-(b?.x ?? 0));
+      let next = 0;
+      const positions = Object.fromEntries(items.map(([id,box],index)=>{
+        const width = Math.min(box?.w || 1,columns-next-(items.length-index-1));
+        const position = [next,0,width,1];
+        next += width;
+        return [id,position];
+      }));
+      return {columns,positions};
+    }
     const count = saved?.columns || grid.count || (mode==='portrait'?4:6);
     const positions = {};
     const occupied = [];
@@ -303,27 +317,21 @@ export function applyStudioLayout(root,model,{mode,activeTeam,section,tabletLayo
 
   const board = get('.board-main-grid');
   if (board && available('editor-board')) {
-    const {home,away,quarter,playarea,meta} = select(board,{
+    const {home,away,quarter,playarea} = select(board,{
       home:'.team-card.home',away:'.team-card.away',quarter:'.utility-row',
-      playarea:'[data-layout-item="workspace"]',meta:'.game-meta'
+      playarea:'[data-layout-item="workspace"]'
     });
-    const shottracker = document.createElement('button');
-    shottracker.className = 'subtle studio-board-shots';
-    shottracker.dataset.action = 'show-shots';
-    shottracker.textContent = 'Shot tracker · Gold / Silver / Bronze';
     const outer = document.createElement('div');
     outer.className = 'studio-grid-group studio-board-grid';
-    board.after(meta,outer);
-    outer.append(home,away,quarter,playarea,shottracker);
-    meta.style.removeProperty('grid-row');
-    meta.style.removeProperty('grid-column');
-    board.remove();
-    grid(outer,'editor-board',{home,away,quarter,playarea,shottracker});
+    outer.append(home,away,quarter,playarea);
+    board.replaceWith(outer);
+    grid(outer,'editor-board',{home,away,quarter,playarea});
   }
   const utility = get('.utility-row');
   if (utility && available('game-controls')) {
-    const quarter = get('.game-meta .quarter-wrap');
-    const {filter,undo,rules} = select(utility,{filter:'.filter-group',undo:'[data-action="undo"]',rules:'[data-action="rules"]'});
+    const {quarter,filter,undo,rules} = select(utility,{
+      quarter:'.quarter-wrap',filter:'.filter-group',undo:'[data-action="undo"]',rules:'[data-action="rules"]'
+    });
     utility.replaceChildren(...[quarter,filter,undo,rules].filter(Boolean));
     grid(utility,'game-controls',{quarter,filter,undo,rules});
   }
@@ -353,7 +361,16 @@ export function applyStudioLayout(root,model,{mode,activeTeam,section,tabletLayo
     const group = get('.compact-plays',category);
     if (group) grid(group,'plays:' + activeTeam + ':' + category.dataset.layoutItem.slice('category:'.length),marked(group));
   }
-  gridIfPresent('.header-actions','game-header',Object.fromEntries(headerButtons.map(([id])=>[id,'[data-action="' + id + '"]'])));
+  const header = get('.header-actions'), headerLayout = available('game-header');
+  if (header && headerLayout) {
+    const ordered = Object.entries(headerLayout.positions).sort(([,a],[,b])=>a[0]-b[0]);
+    for (const [id,[,,width]] of ordered) {
+      const button = get('[data-action="' + id + '"]',header);
+      if (!button) continue;
+      if (width > 1) button.style.flexGrow = String(width-1);
+      header.append(button);
+    }
+  }
   gridIfPresent('.outcome-grid','results');
   const result = get('.result-modal');
   if (result) grid(result,'result-popup',select(result,{title:'.modal-head',results:'.outcome-grid'}));
