@@ -4,6 +4,8 @@
 
 **Use this link on any phone, tablet, or computer:** [https://jordantlschumann5.github.io/courtside-ipad/](https://jordantlschumann5.github.io/courtside-ipad/)
 
+Every GitHub release post should start with a clickable **Open Courtside** link. Use `https://jordantlschumann5.github.io/courtside-ipad/?release=TAG` with that release's tag, so the link can load the update even when an older copy of the app is saved offline.
+
 You can also use **Copy access link** on the start screen. Game data stays in the browser on the device where it was entered. To move a game between devices, export its JSON backup on one device and import it on the other.
 
 Courtside is a separate, one-iPad app. It has no connection to either EIU practice-stat site. It keeps game data in the iPad's browser storage and requires no Wi-Fi during a game.

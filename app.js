@@ -580,7 +580,7 @@ async function boot() {
     for (const game of ui.games) if (stored.find(item => item.id === game.id)?.schema !== game.schema) await putGame(game);
     const selected = localStorage.getItem('courtside-selected-game');
     ui.game = ui.games.find(game => game.id === selected) || ui.games.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0] || null;
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(() => {});
     if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
     render();
   } catch (error) {
