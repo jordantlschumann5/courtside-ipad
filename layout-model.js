@@ -10,7 +10,7 @@ const overviewResults = [
 const headerButtons = [
   ['show-board','Board'],['show-overview','Overview'],['show-history','Entries'],
   ['show-shots','Shot tracker'],['layout','Edit layout'],['calculator','PPP Calc'],
-  ['setup','Setup file'],['export','Export'],['show-link','Link'],['more','More']
+  ['setup','Setup file'],['export','Export'],['more','More']
 ];
 const boardRoot = {
   portrait: [[0,0,2,2],[2,0,2,2],[0,2,2,1],[2,2,2,2],[0,4,4,1]],
@@ -194,7 +194,7 @@ export function createLayoutModel(game,{activeTeam,section,outcomes,total,action
     }
     return result;
   }
-  return {pages,getDefault,persist,teamNames,startCategories};
+  return {pages,getDefault,persist,teamNames};
 }
 
 function overlap([x,y,w,h],[a,b,c,d]) {

@@ -1,7 +1,7 @@
-const CACHE = 'courtside-shell-v18';
+const CACHE = 'courtside-shell-v19';
 const ASSETS = [
-  './', './index.html', './styles.css?v=18', './app.js?v=18', './layout-editor.js?v=18',
-  './layout-model.js?v=18', './core.js?v=16', './setup.js?v=18', './overview.js?v=16',
+  './', './index.html', './styles.css?v=18', './app.js?v=19', './layout-editor.js?v=18',
+  './layout-model.js?v=19', './core.js?v=16', './setup.js?v=18', './overview.js?v=16',
   './storage.js?v=16', './calculator.js?v=16', './manifest.webmanifest', './icon.svg'
 ];
 self.addEventListener('install', event => {
