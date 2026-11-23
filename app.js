@@ -1,11 +1,13 @@
+import { mountLayoutEditor } from './layout-editor.js?v=18';
+import { createLayoutModel, applyStudioLayout, ipadOrientation } from './layout-model.js?v=18';
 import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, OUTCOME_GROUP_LABELS, outcomeGroup, gameOutcomes, getOutcome, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=16';
-import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=16';
+import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=18';
 import { buildOverview } from './overview.js?v=16';
 import { listGames, putGame, listSetups, putSetup, deleteSetup } from './storage.js?v=16';
 import { pointsPerPossession } from './calculator.js?v=16';
 
 const root = document.querySelector('#app');
-const ui = { game: null, games: [], setupProfiles: [], activeTeam: 'home', shotTeam: 'home', section: 1, view: 'board', overviewTeam: 'home', overviewSection: 'all', overviewQuery: '', overviewOutcome: 'all', overviewSort: 'category', overviewRecorded: false, selectedPlay: null, dialog: null, filter: 'all', historyTeam: 'all', historyType: 'all', pendingSetup: null, layoutSurface: 'board-main', layoutTeam: 'home', layoutSection: 1, layoutCategory: '', layoutDevice: 'desktop', layoutDraft: null, layoutPointer: null, layoutSelected: '', layoutStack: [], layoutUndo: [], layoutStatus: '', notice: '', busy: false, storageError: false };
+const ui = { game: null, games: [], setupProfiles: [], activeTeam: 'home', shotTeam: 'home', section: 1, view: 'board', overviewTeam: 'home', overviewSection: 'all', overviewQuery: '', overviewOutcome: 'all', overviewSort: 'category', overviewRecorded: false, selectedPlay: null, dialog: null, filter: 'all', historyTeam: 'all', historyType: 'all', pendingSetup: null, notice: '', busy: false, storageError: false };
 const APP_URL = 'https://jordantlschumann5.github.io/courtside-ipad/';
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const id = () => crypto.randomUUID();
@@ -54,42 +56,6 @@ function readPlacement(layout,key,id,index,total,device) {
 function gridStyle(game,key,itemId,index,total,device=currentLayoutDevice(),layout=game.layout) {
   const p=readPlacement(layout,key,itemId,index,total,device);
   return ` style="grid-column:${p.x} / span ${p.w};grid-row:${p.y} / span ${p.h};"`;
-}
-function layoutDescriptor(game) {
-  if(ui.layoutSurface==='board-main')return {key:'board-main',title:'Board · main layout',surface:'board-main',items:[{id:'game-meta',name:'Game title & quarter',meta:'Board header'},{id:'team-grid',name:'Team cards',meta:'Timeouts, fouls, free throws, rosters',inside:'team-cards'},{id:'utility-row',name:'Game controls',meta:'Quarter filter, undo, success rules'},{id:'workspace',name:'Play sections',meta:'Categories, actions, plays',inside:'board-sections'}]};
-  if(ui.layoutSurface==='team-cards')return {key:'team-cards',title:'Board · team cards',surface:'team-cards',items:['home','away'].map(team=>({id:team,name:teamName(game,team),meta:'Team summary and roster',inside:'team-interior',team}))};
-  if(ui.layoutSurface==='team-interior')return {key:`team-interior:${ui.layoutTeam}`,title:`${teamName(game,ui.layoutTeam)} · contents`,surface:'team-interior',items:[{id:'team-header',name:`${teamName(game,ui.layoutTeam)} heading`,meta:'Team name and roster editor'},{id:'team-stats',name:'Team stats',meta:'Timeouts · fouls · free throws',inside:'team-metrics',team:ui.layoutTeam},{id:'team-roster',name:'Player roster',meta:`${game.teams[ui.layoutTeam]?.players.length||0} player cells`,inside:'team-roster',team:ui.layoutTeam}]};
-  if(ui.layoutSurface==='team-metrics')return {key:`team-metrics:${ui.layoutTeam}`,title:`${teamName(game,ui.layoutTeam)} summary cells`,surface:'team-metrics',items:[{id:'timeouts',name:'Timeouts',meta:'30 sec and 60 sec counters'},{id:'fouls',name:'Team fouls',meta:'Quarter filtered total'},{id:'free-throws',name:'Free throws',meta:'Makes and attempts'}]};
-  if(ui.layoutSurface==='board-sections')return {key:`sections:${ui.layoutTeam}`,title:'Board · section tabs',items:Object.entries(game.sectionNames[ui.layoutTeam]||{}).map(([id,name])=>({id,name:`${id} · ${name}`,meta:'Section tab',inside:'board-categories',section:Number(id)}))};
-  if(ui.layoutSurface==='team-roster')return {key:`roster:${ui.layoutTeam}`,title:`${teamName(game,ui.layoutTeam)} roster cells`,items:(game.teams[ui.layoutTeam]?.players||[]).map(player=>({id:player.id,name:`${player.number?`#${player.number} `:''}${player.name}`,meta:'Player card'}))};
-  if(ui.layoutSurface==='board-categories')return {key:`board:${ui.layoutTeam}:${ui.layoutSection}`,title:`Board · ${game.sectionNames[ui.layoutTeam]?.[ui.layoutSection]||`Section ${ui.layoutSection}`} categories`,items:[...(game.playbooks[ui.layoutTeam]||[]).filter(item=>Number(item.section)===Number(ui.layoutSection)).map(item=>({id:`category:${item.id}`,name:item.name,meta:`${item.plays.length} plays`,inside:'board-plays',category:item.id})),...actionRows(game,ui.layoutTeam).filter(item=>Number(item.section)===Number(ui.layoutSection)).map(item=>({id:`action:${item.id}`,name:item.name,meta:'Direct action'}))]};
-  if(ui.layoutSurface==='board-plays'){const category=(game.playbooks[ui.layoutTeam]||[]).find(item=>item.id===ui.layoutCategory);return {key:`plays:${ui.layoutTeam}:${ui.layoutCategory}`,title:category?.name||'Play buttons',items:(category?.plays||[]).map(play=>({id:play.id,name:play.name,meta:'Play button'}))};}
-  if(ui.layoutSurface==='results')return {key:'results',title:'Result buttons',items:gameOutcomes(game).map(item=>({id:item.id,name:item.label,meta:item.short||item.label}))};
-  if(ui.layoutSurface==='shots')return {key:'shot-tracker',title:'Shot tracker cells',items:[{id:'gold',name:'Gold',meta:'Medal counter'},{id:'silver',name:'Silver',meta:'Medal counter'},{id:'bronze',name:'Bronze',meta:'Medal counter'}]};
-  if(ui.layoutSurface==='overview-details')return {key:'overview-details',title:'Overview result breakdown',items:gameOutcomes(game).map(item=>({id:item.id,name:item.label,meta:'Per-play output count'}))};
-  return {key:'overview',title:'Overview result cells',surface:'overview',items:[{id:'all',name:'All results',meta:'Summary count'},...[["made-2","2-point makes"],["missed-2","2-point misses"],["made-3","3-point makes"],["missed-3","3-point misses"],["turnover","Turnovers"],["foul","Fouls earned"],["other","Other results"]].map(([id,name])=>({id,name,meta:'Summary count'}))]};
-}
-function layoutItems(game){const d=layoutDescriptor(game);return {...d,surface:d.surface||ui.layoutSurface,items:orderByLayout(game,d.key,d.items)};}
-function beginLayoutEditor(game,initialSurface='board-main') {
-  ui.layoutSurface=initialSurface;ui.layoutTeam=ui.activeTeam;ui.layoutSection=ui.section;ui.layoutCategory=teamPlaybook(game,ui.activeTeam)[0]?.id||'';
-  ui.layoutDevice=currentLayoutDevice();ui.layoutDraft=structuredClone(game.layout||{});ui.layoutUndo=[];ui.layoutStatus='';
-  ui.layoutStack=[{surface:initialSurface,team:ui.layoutTeam,section:ui.layoutSection,category:ui.layoutCategory}];
-  const descriptor=layoutItems(game);ui.layoutSelected=descriptor.items[0]?.id||'';ui.view='layout';ui.dialog=null;ui.selectedPlay=null;
-}
-function snapshotLayoutDraft() { if(!ui.layoutDraft)return;ui.layoutUndo.push(structuredClone(ui.layoutDraft));if(ui.layoutUndo.length>30)ui.layoutUndo.shift(); }
-function setLayoutScope(surface,context={}) {
-  ui.layoutSurface=surface;
-  if(context.team)ui.layoutTeam=context.team;
-  if(context.section)ui.layoutSection=Number(context.section);
-  if(context.category)ui.layoutCategory=context.category;
-  ui.layoutStack.push({surface,team:ui.layoutTeam,section:ui.layoutSection,category:ui.layoutCategory});
-  const descriptor=layoutItems(ui.game);ui.layoutSelected=descriptor.items[0]?.id||'';ui.layoutStatus='';render();
-}
-function backLayoutScope() {
-  if(ui.layoutStack.length<=1)return;
-  ui.layoutStack.pop();const previous=ui.layoutStack.at(-1);
-  ui.layoutSurface=previous.surface;ui.layoutTeam=previous.team;ui.layoutSection=previous.section;ui.layoutCategory=previous.category;
-  const descriptor=layoutItems(ui.game);ui.layoutSelected=descriptor.items[0]?.id||'';ui.layoutStatus='';render();
 }
 function setupProfile(game,name){return {id:id(),name,format:'courtside-setup-profile',version:1,savedAt:new Date().toISOString(),teams:Object.fromEntries(['home','away'].map(team=>[team,{name:game.teams[team].name,players:structuredClone(game.teams[team].players),categories:structuredClone(game.playbooks[team]),sections:structuredClone(game.sectionNames[team]),direct:structuredClone(game.directSections[team]),directNames:structuredClone(game.directNames[team])}])),outcomeOptions:structuredClone(game.outcomeOptions||[]),successOutcomes:[...(game.successOutcomes||[])],layout:structuredClone(game.layout||{})};}
 function isSetupProfile(value){return value?.format==='courtside-setup-profile'&&value.version===1&&value.teams?.home?.players&&value.teams?.away?.players&&Array.isArray(value.outcomeOptions);}
@@ -228,7 +194,7 @@ function renderGame() {
     <div class="game-heading"><label class="sr-only" for="game-picker">Game</label><select id="game-picker" data-action="switch-game">${ui.games.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(item => `<option value="${item.id}" ${item.id === game.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><button class="header-add" data-action="new-game" title="New game">＋</button></div>
     <div class="header-actions"><span class="local-badge"><span class="local-dot"></span>Saved locally</span>${ui.view==='layout'?'<button data-action="show-board" class="header-button">Back to board</button>':`<button data-action="show-board" class="header-button ${ui.view === 'board' ? 'selected' : ''}">Board</button><button data-action="show-overview" class="header-button ${ui.view === 'overview' ? 'selected' : ''}">Overview</button><button data-action="show-history" class="header-button ${ui.view === 'history' ? 'selected' : ''}">Entries (${entries.length})</button><button data-action="show-shots" class="header-button ${ui.view === 'shot-tracker' ? 'selected' : ''}">Shot tracker</button><button data-action="layout" class="header-button">Edit layout</button><button data-action="calculator" class="header-button">PPP Calc</button><button data-action="setup" class="header-button">Setup file</button><button data-action="export" class="header-button">Export</button><button data-action="show-link" class="header-button">Link</button><button data-action="more" class="header-button">More</button>`}</div>
   </header>`}
-  ${ui.view === 'layout' ? layoutPage(game) : ui.view === 'history' ? historyPage(game) : ui.view === 'overview' ? overviewPage(game) : ui.view === 'shot-tracker' ? shotTrackerPage(game) : `
+  ${ui.view === 'history' ? historyPage(game) : ui.view === 'overview' ? overviewPage(game) : ui.view === 'shot-tracker' ? shotTrackerPage(game) : `
   <main class="main-content board-page"><div class="board-main-grid bento-grid" data-layout-surface="board-main" style="--bento-columns:${layoutColumns(game,'board-main',currentLayoutDevice())}">
     <div class="game-meta" data-layout-item="game-meta"${gridStyle(game,'board-main','game-meta',0,4)}><div><span class="section-eyebrow">${esc(game.date)} · ${entries.length} ENTRIES</span><h1>${esc(game.name)}</h1></div><div class="quarter-wrap"><span>Recording in</span><div class="quarter-group">${[1,2,3,4].map(number => `<button data-action="quarter" data-quarter="${number}" class="${game.quarter === number ? 'active' : ''}">Q${number}</button>`).join('')}</div></div></div>
     <div class="team-grid bento-grid" data-layout-item="team-grid"${gridStyle(game,'board-main','team-grid',1,4)} data-layout-surface="team-cards" style="--bento-columns:${layoutColumns(game,'team-cards',currentLayoutDevice())}">${teamCard(game, 'home', total)}${teamCard(game, 'away', total)}</div>
@@ -243,47 +209,9 @@ function renderWelcome() {
   return `<div class="welcome"><div class="welcome-card"><span class="welcome-logo">C</span><span class="section-eyebrow">ONE IPAD · FULL CONTROL</span><h1>Game stats that keep working when Wi-Fi doesn’t.</h1><p>Track both rosters, fouls, timeouts, free throws, and every result of every play. Entries stay on this iPad until you export a backup.</p><div class="welcome-actions"><button class="primary" data-action="new-game">Create a game</button><button class="subtle" data-action="import">Import a backup</button></div><div class="public-access"><span>COURTSIDE LINK · OPEN ON ANY DEVICE</span><a href="${APP_URL}" target="_blank" rel="noopener">${APP_URL}</a><button class="subtle" data-action="copy-link">Copy access link</button></div><div class="welcome-note">Once installed to the iPad Home Screen, this app can open and save entries offline. Each device keeps separate game data; use an exported backup to transfer games.</div></div></div>${renderDialog()}`;
 }
 
-function layoutDialog(game) {
-  const descriptor=layoutItems(game), surface=ui.layoutSurface,device=ui.layoutDevice,cols=columnsForSurface(descriptor.surface,device),draft=ui.layoutDraft||game.layout;
-  const categories=teamPlaybook(game,ui.layoutTeam);
-  const sections=Object.entries(game.sectionNames[ui.layoutTeam]||{}).sort((a,b)=>Number(a[0])-Number(b[0]));
-  const showTeam=['team-metrics','board-sections','board-categories','board-plays','team-roster'].includes(surface);
-  const selectors=`${showTeam?`<label>Team<select id="layout-team"><option value="home" ${ui.layoutTeam==='home'?'selected':''}>${esc(teamName(game,'home'))}</option><option value="away" ${ui.layoutTeam==='away'?'selected':''}>${esc(teamName(game,'away'))}</option></select></label>`:''}${surface==='board-categories'?`<label>Section<select id="layout-section">${sections.map(([n,name])=>`<option value="${n}" ${Number(ui.layoutSection)===Number(n)?'selected':''}>${esc(name)}</option>`).join('')}</select></label>`:''}${surface==='board-plays'?`<label>Category<select id="layout-category">${categories.map(item=>`<option value="${item.id}" ${ui.layoutCategory===item.id?'selected':''}>${esc(item.name)}</option>`).join('')}</select></label>`:''}`;
-  const preview=descriptor.items.length?descriptor.items.map((item,index)=>{
-    const p=readPlacement(draft,descriptor.key,item.id,index,descriptor.items.length,device),style=`grid-column:${p.x} / span ${p.w};grid-row:${p.y} / span ${p.h};`;
-    const detail=surface==='team-metrics'&&item.id==='timeouts'?'<div class="layout-preview-value">30 sec&nbsp; 0/3 &nbsp; · &nbsp; 60 sec&nbsp; 0/1</div>':surface==='team-metrics'&&item.id==='fouls'?'<div class="layout-preview-value">Team fouls &nbsp; 0</div>':surface==='team-metrics'&&item.id==='free-throws'?'<div class="layout-preview-value">Free throws &nbsp; 0–0</div>':`<small>${esc(item.meta||'')}</small>`;
-    return `<article class="layout-preview-tile ${item.id==='timeouts'?'preview-timeouts':''}" data-layout-id="${esc(item.id)}" style="${style}"><button type="button" class="layout-drag-handle" data-layout-drag aria-label="Drag ${esc(item.name)} to move">⠿</button><span class="layout-tile-title">${esc(item.name)}</span>${detail}<span class="layout-tile-size">${p.w} × ${p.h}</span><span class="layout-resize-handle" data-layout-resize aria-label="Resize ${esc(item.name)}"></span></article>`;
-  }).join(''):'<p class="layout-empty">This area has no cells yet. Add content in Setup or Edit layout first.</p>';
-  const deviceName=device==='desktop'?'Computer':device==='tablet'?'Tablet':'Phone';
-  return `<div class="modal-backdrop layout-studio-backdrop"><section class="layout-studio" role="dialog" aria-modal="true" aria-label="Visual layout editor"><header class="layout-studio-head"><div><span class="section-eyebrow">BENTO LAYOUT STUDIO</span><h2>Edit the app layout</h2><p>Drag a tile by its dotted handle. Resize from its lower-right corner. Layout changes are saved separately from game entries.</p></div><button class="close" data-action="layout-cancel" aria-label="Cancel layout edits">×</button></header><div class="layout-studio-toolbar"><label>Area<select id="layout-surface"><option value="board-main" ${surface==='board-main'?'selected':''}>Board · main panels</option><option value="team-cards" ${surface==='team-cards'?'selected':''}>Board · Team A and Team B cards</option><option value="team-metrics" ${surface==='team-metrics'?'selected':''}>Board · timeout, foul, FT cells</option><option value="board-sections" ${surface==='board-sections'?'selected':''}>Board · section tabs</option><option value="board-categories" ${surface==='board-categories'?'selected':''}>Board · categories and actions</option><option value="board-plays" ${surface==='board-plays'?'selected':''}>Board · plays inside a category</option><option value="team-roster" ${surface==='team-roster'?'selected':''}>Board · player cells</option><option value="results" ${surface==='results'?'selected':''}>Result popup · buttons</option><option value="shots" ${surface==='shots'?'selected':''}>Shot tracker · medal cells</option><option value="overview" ${surface==='overview'?'selected':''}>Overview · result totals</option><option value="overview-details" ${surface==='overview-details'?'selected':''}>Overview · result counts</option></select></label>${selectors}<label>Preview device<select id="layout-device"><option value="desktop" ${device==='desktop'?'selected':''}>Computer · 12 columns</option><option value="tablet" ${device==='tablet'?'selected':''}>Tablet · ${columnsForSurface(descriptor.surface,'tablet')} columns</option><option value="phone" ${device==='phone'?'selected':''}>Phone · ${columnsForSurface(descriptor.surface,'phone')} columns</option></select></label><div class="layout-studio-actions"><button class="subtle" data-action="layout-reset">Reset area</button><button class="subtle" data-action="layout-cancel">Cancel</button><button class="primary" data-action="layout-save">Save layout</button></div></div><div class="layout-preview-caption"><strong>${esc(descriptor.title)}</strong><span>${deviceName} preview · ${descriptor.items.length} movable ${descriptor.items.length===1?'tile':'tiles'}</span></div><div class="layout-canvas-wrap"><div class="layout-canvas" data-layout-canvas data-layout-key="${esc(descriptor.key)}" data-layout-surface="${esc(descriptor.surface)}" data-layout-device="${device}" style="--layout-columns:${cols}">${preview}</div></div><div class="layout-studio-foot">This is a layout preview, not a live game. You can keep the normal board open after saving; only cell positions and sizes change.</div></section></div>`;
-}
-
-function layoutPage(game) {
-  const descriptor=layoutItems(game),surface=descriptor.surface||ui.layoutSurface,device=ui.layoutDevice,cols=layoutColumns(ui.layoutDraft||game.layout,descriptor.key,device),items=descriptor.items;
-  const hasTeam=['team-metrics','board-sections','board-categories','board-plays','team-roster','team-interior'].includes(ui.layoutSurface);
-  const sections=Object.entries(game.sectionNames[ui.layoutTeam]||{}).sort((a,b)=>Number(a[0])-Number(b[0]));
-  const categories=teamPlaybook(game,ui.layoutTeam);
-  const selected=items.find(item=>item.id===ui.layoutSelected)||items[0];
-  const p=selected?readPlacement(ui.layoutDraft,descriptor.key,selected.id,items.indexOf(selected),items.length,device):{x:1,y:1,w:1,h:1};
-  const pages=[['board-main','Board'],['results','Play result'],['shots','Shot tracker'],['overview','Overview'],['overview-details','Outcome breakdown']];
-  const pageValue=['team-cards','team-interior','team-metrics','board-sections','board-categories','board-plays','team-roster'].includes(ui.layoutSurface)?'board-main':ui.layoutSurface;
-  const canvasOptions=pageValue==='board-main'?[['board-main','Board layout'],['team-cards','Team cards'],['team-interior','Team card contents'],['team-metrics','Team counters'],['team-roster','Player cells'],['board-sections','Section tabs'],['board-categories','Categories and actions'],['board-plays','Plays in a category']]:[[ui.layoutSurface,descriptor.title]];
-  const path=ui.layoutStack.map(scope=>scope.title).filter(Boolean);
-  const crumbs=path.length?path.join(' / '):descriptor.title;
-  const tiles=items.length?items.map((item,index)=>{
-    const box=readPlacement(ui.layoutDraft,descriptor.key,item.id,index,items.length,device),style=`grid-column:${box.x} / span ${box.w};grid-row:${box.y} / span ${box.h};`;
-    const active=selected?.id===item.id?' is-selected':'';
-    const detail=ui.layoutSurface==='team-metrics'&&item.id==='timeouts'?'<small>30 sec and 60 sec counters</small>':ui.layoutSurface==='team-metrics'&&item.id==='fouls'?'<small>Quarter foul count</small>':ui.layoutSurface==='team-metrics'&&item.id==='free-throws'?'<small>Makes and attempts</small>':`<small>${esc(item.meta||'')}</small>`;
-    return `<article class="layout-preview-tile cs-tile${active}" data-layout-id="${esc(item.id)}" style="${style}"><div class="cs-tile-head"><button type="button" class="layout-drag-handle cs-grip" data-layout-drag aria-label="Drag ${esc(item.name)} to move">⠿</button><button type="button" class="layout-tile-select cs-pick" data-action="layout-select" data-id="${esc(item.id)}">${esc(item.name)}</button><span class="layout-tile-size cs-size">${box.w} × ${box.h}</span></div><div class="cs-content">${detail}</div>${item.inside?`<button type="button" class="layout-enter" data-action="layout-enter" data-inside="${esc(item.inside)}" ${item.team?`data-team="${esc(item.team)}"`:''}${item.section?`data-section="${item.section}"`:''}${item.category?`data-category="${esc(item.category)}"`:''}>Edit inside</button>`:''}<button type="button" class="layout-resize-handle cs-resize" data-layout-resize aria-label="Resize ${esc(item.name)}"></button></article>`;
-  }).join(''):'<p class="layout-empty">This area has no cells yet. Add content in Setup or Edit plays first.</p>';
-  const contextSelectors=`${hasTeam?`<label>Team<select id="layout-team"><option value="home" ${ui.layoutTeam==='home'?'selected':''}>${esc(teamName(game,'home'))}</option><option value="away" ${ui.layoutTeam==='away'?'selected':''}>${esc(teamName(game,'away'))}</option></select></label>`:''}${ui.layoutSurface==='board-categories'?`<label>Section<select id="layout-section">${sections.map(([n,name])=>`<option value="${n}" ${Number(ui.layoutSection)===Number(n)?'selected':''}>${esc(name)}</option>`).join('')}</select></label>`:''}${ui.layoutSurface==='board-plays'?`<label>Category<select id="layout-category">${categories.map(item=>`<option value="${item.id}" ${ui.layoutCategory===item.id?'selected':''}>${esc(item.name)}</option>`).join('')}</select></label>`:''}`;
-  return `<main class="main-content layout-page"><section class="layout-studio editor-app" aria-label="Visual layout editor"><header class="layout-studio-head editor-head"><div class="editor-brand"><span aria-hidden="true">C</span><b>COURTSIDE</b></div><strong class="editor-title">Layout editor</strong><div class="editor-head-actions"><button class="subtle" data-action="show-board">Return to board</button><button class="primary" data-action="layout-save">Save &amp; preview</button></div></header><div class="editor-body"><div class="layout-studio-toolbar editor-toolbar"><label>Page<select id="layout-page">${pages.map(([value,label])=>`<option value="${value}" ${pageValue===value?'selected':''}>${label}</option>`).join('')}</select></label><label>Canvas<select id="layout-surface">${canvasOptions.map(([value,label])=>`<option value="${value}" ${ui.layoutSurface===value?'selected':''}>${esc(label)}</option>`).join('')}</select></label>${ui.layoutStack.length>1?'<button class="subtle layout-back-button" data-action="layout-back">Back</button>':''}${contextSelectors}<label class="layout-columns-label">Grid columns<select id="layout-columns">${Array.from({length:11},(_,index)=>index+2).map(value=>`<option value="${value}" ${cols===value?'selected':''}>${value}</option>`).join('')}</select></label><button class="subtle" data-action="layout-undo" ${ui.layoutUndo.length?'':'disabled'}>Undo</button></div><div class="editor-devices" role="group" aria-label="Preview device"><button class="${device==='tablet'?'active':''}" data-action="layout-device" data-device="tablet" aria-pressed="${device==='tablet'}">iPad portrait</button><button class="${device==='desktop'?'active':''}" data-action="layout-device" data-device="desktop" aria-pressed="${device==='desktop'}">iPad landscape</button><button class="${device==='phone'?'active':''}" data-action="layout-device" data-device="phone" aria-pressed="${device==='phone'}">Phone</button><button class="subtle" data-action="layout-reset">Reset layout</button></div><div class="editor-caption"><strong>${esc(crumbs)}</strong><span>${device==='desktop'?'iPad landscape':device==='tablet'?'iPad portrait':'Phone'} fit · ${cols} columns · ${items.length} cells</span><span class="editor-help">Drag the grip to move. Pull the corner to resize.</span></div><section class="layout-inspector editor-inspector" aria-label="Selected cell settings"><div class="layout-inspector-title"><b>${selected?esc(selected.name):'No cell selected'}</b>${selected?.inside?`<button class="subtle" data-action="layout-enter" data-inside="${esc(selected.inside)}" ${selected.team?`data-team="${esc(selected.team)}"`:''}${selected.section?`data-section="${selected.section}"`:''}${selected.category?`data-category="${esc(selected.category)}"`:''}>Edit inside</button>`:''}</div>${selected?`<div class="layout-field-grid"><label>Column<input type="number" min="1" max="${cols}" data-layout-field="x" value="${p.x}"></label><label>Row<input type="number" min="1" max="48" data-layout-field="y" value="${p.y}"></label><label>Width<input type="number" min="1" max="${cols}" data-layout-field="w" value="${p.w}"></label><label>Height<input type="number" min="1" max="12" data-layout-field="h" value="${p.h}"></label></div>`:'<p class="form-help">Select a cell to edit its position and size.</p>'}</section><div class="layout-canvas-wrap editor-canvas-wrap"><div class="layout-canvas cs-grid" data-layout-canvas data-layout-key="${esc(descriptor.key)}" data-layout-surface="${esc(surface)}" data-layout-device="${device}" style="--layout-columns:${cols};--columns:${cols}"><div class="cs-grid-lines"></div>${tiles}</div></div><p class="layout-edit-status editor-status" role="status">${esc(ui.layoutStatus||'Changes are drafts until you save.')}</p><div class="layout-studio-foot editor-foot">The editor changes layout only. Rosters, plays, and game entries stay intact.</div></div></section></main>`;
-}
-
 function renderDialog() {
   const d = ui.dialog;
   if (!d && !ui.selectedPlay) return '';
-  if (d?.type === 'layout') return layoutDialog(ui.game);
   if (ui.selectedPlay && !d) {
     const { category, play } = ui.selectedPlay;
     const options=orderByLayout(ui.game,'results',gameOutcomes(ui.game).filter(item => item.enabled !== false));
@@ -331,10 +259,41 @@ function playRow(play) { return `<div class="edit-row" data-play-row data-id="${
 function actionRow(action) { return `<div class="edit-row action-edit-row" data-action-row data-id="${esc(action.id)}"><input aria-label="Action name" placeholder="Action name" maxlength="60" value="${esc(action.name)}"><select aria-label="Action section" data-action-section>${Object.entries(ui.game.sectionNames[ui.dialog.team]).sort((a,b)=>Number(a[0])-Number(b[0])).map(([number,label]) => `<option value="${number}" ${Number(action.section) === Number(number) ? 'selected' : ''}>${esc(label)}</option>`).join('')}</select><button type="button" data-action="remove-row" aria-label="Remove action">×</button></div>`; }
 function resultRow(option) { return `<div class="edit-row result-edit-row ${option.enabled===false?'is-archived':''}" data-result-row data-id="${esc(option.id)}"><input aria-label="Result name" placeholder="Result name" maxlength="80" value="${esc(option.label)}"><input aria-label="Button label" placeholder="Button label" maxlength="40" value="${esc(option.short||option.label)}"><label class="result-output">Counts as<select aria-label="Counts as" data-result-output>${Object.entries(OUTCOME_GROUP_LABELS).map(([value,label])=>`<option value="${value}" ${outcomeGroup(option)===value?'selected':''}>${esc(label)}</option>`).join('')}</select></label><label class="result-points">Pts<input aria-label="Result points" type="number" min="0" max="10" step="1" value="${Number(option.points)||0}"></label><label class="result-check"><input type="checkbox" data-result-success ${ui.game.successOutcomes.includes(option.id)?'checked':''}>Success</label><label class="result-check"><input type="checkbox" data-result-enabled ${option.enabled===false?'':'checked'}>Shown</label></div>`; }
 
+function openLayoutEditor(game,fromPlays) {
+  const previousView = ui.view;
+  const model = createLayoutModel(game,{
+    activeTeam:ui.activeTeam,section:ui.section,outcomes:gameOutcomes(game),
+    total:totals(game),actions:actionRows(game,ui.activeTeam),entries:activeEvents(game).length
+  });
+  ui.dialog = null;
+  ui.selectedPlay = null;
+  ui.view = 'layout';
+  root.innerHTML = '<main class="courtside-layout-host" aria-label="Layout editor"></main>';
+  mountLayoutEditor(root.firstElementChild,{
+    ...model,gameName:game.name,initialOrientation:ipadOrientation(),
+    initialScope:fromPlays ? model.startCategories : 'Board layout',
+    async onSave(draft,columns) {
+      const updated = model.persist(ui.game.layout,draft,columns);
+      if (JSON.stringify(updated) === JSON.stringify(ui.game.layout)) return;
+      const saved = await commit(next=>{next.layout = updated;},'Layout saved with this game');
+      if (!saved) throw new Error(ui.notice || 'The layout could not be saved.');
+    },
+    onExit() {
+      ui.view = previousView;
+      render();
+    }
+  });
+  window.scrollTo(0,0);
+}
+
 function render() {
+  if (ui.view === 'layout') return; // Preserve the editor while notifications clear.
   root.innerHTML = ui.game ? renderGame() : renderWelcome();
   const message = ui.storageError ? `<div class="toast error" role="alert">${esc(ui.notice)}</div>` : ui.notice ? `<div class="toast" role="status">${esc(ui.notice)}</div>` : '';
   root.insertAdjacentHTML('beforeend', message);
+  if (ui.game) applyStudioLayout(root,ui.game,{
+    mode:ipadOrientation(),activeTeam:ui.activeTeam,section:ui.section
+  });
 }
 
 function download(filename, content, mime) { const blob = new Blob([content], { type: mime }), url = URL.createObjectURL(blob), anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; document.body.append(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); }
@@ -366,16 +325,10 @@ async function handleAction(target) {
   if (action === 'export-csv') return exportCsv();
   if (action === 'calculator') { ui.dialog = { type: 'calculator' }; ui.selectedPlay = null; render(); return; }
   if (!game) return;
-  if(action==='layout'){beginLayoutEditor(game,target.dataset.layoutInitial||'board-main');render();return;}
-  if(action==='layout-device'){ui.layoutDevice=target.dataset.device||'desktop';ui.layoutStatus='';render();return;}
-  if(action==='show-board'&&ui.view==='layout'){ui.layoutPointer=null;ui.layoutDraft=null;ui.layoutStack=[];ui.view='board';render();return;}
-  if(action==='layout-cancel'){ui.layoutPointer=null;ui.layoutDraft=null;ui.layoutStack=[];ui.view='board';render();return;}
-  if(action==='layout-save'){const draft=structuredClone(ui.layoutDraft||{});if(await commit(next=>{next.layout=draft;},'Layout saved with this game')){ui.layoutDraft=null;ui.layoutStack=[];ui.view='board';render();}return;}
-  if(action==='layout-select'){ui.layoutSelected=target.dataset.id;render();return;}
-  if(action==='layout-enter'){setLayoutScope(target.dataset.inside,{team:target.dataset.team,section:target.dataset.section,category:target.dataset.category});return;}
-  if(action==='layout-back'){backLayoutScope();return;}
-  if(action==='layout-undo'){const previous=ui.layoutUndo.pop();if(previous){ui.layoutDraft=previous;ui.layoutStatus='Last layout change undone.';render();}return;}
-  if(action==='layout-reset'){const descriptor=layoutItems(game),entry=structuredClone(ui.layoutDraft?.[descriptor.key]||layoutEntry(game,descriptor.key));snapshotLayoutDraft();entry.placements||={};delete entry.placements[ui.layoutDevice];if(entry.columns)delete entry.columns[ui.layoutDevice];ui.layoutDraft||=structuredClone(game.layout||{});ui.layoutDraft[descriptor.key]=entry;ui.layoutStatus='This grid is back to its default layout.';render();return;}
+  if (action === 'layout') {
+    openLayoutEditor(game,target.dataset.layoutInitial === 'board-categories');
+    return;
+  }
   if(action==='save-setup-profile'){
     const name=document.querySelector('#setup-profile-name')?.value.trim();if(!name)return flash('Enter a name for this setup profile.');
     const profile=setupProfile(game,name.slice(0,80));await putSetup(profile);ui.setupProfiles=await listSetups();flash(`Setup profile “${profile.name}” saved on this device.`);ui.dialog={type:'setup'};render();return;
@@ -453,12 +406,6 @@ async function handleAction(target) {
     const last = activeEvents(game).at(-1); if (!last) return;
     await commit(next => next.voidedEventIds.push(last.id), `Undid: ${eventLabel(last,game)}`); return;
   }
-  if(action==='layout-move'){
-    const {key,id:itemId}=target.dataset,entry=structuredClone(layoutEntry(game,key)),items=layoutItems(game).items;
-    const ordered=orderByLayout(game,key,items.map(item=>({id:item.id}))),ids=ordered.map(item=>item.id),from=ids.indexOf(itemId),to=from+Number(target.dataset.dir);
-    if(from<0||to<0||to>=ids.length)return;[ids[from],ids[to]]=[ids[to],ids[from]];entry.order=ids;
-    await commit(next=>{next.layout||={};next.layout[key]=entry;},'Layout position saved');ui.dialog={type:'layout'};render();return;
-  }
   if (action === 'add-player-row') { document.querySelector('#roster-rows').insertAdjacentHTML('beforeend', playerRow({ id: id(), name: '', number: '' })); document.querySelector('#roster-rows .edit-row:last-child input:nth-child(2)').focus(); return; }
   if (action === 'add-play-row') { document.querySelector('#play-rows').insertAdjacentHTML('beforeend', playRow({ id: id(), name: '' })); document.querySelector('#play-rows .edit-row:last-child input').focus(); return; }
   if (action === 'add-action-row') { document.querySelector('#action-rows').insertAdjacentHTML('beforeend', actionRow({ id: `custom-${id()}`, name: '', section: ui.section })); document.querySelector('#action-rows .edit-row:last-child input').focus(); return; }
@@ -476,34 +423,13 @@ root.addEventListener('click', async event => {
   try { await handleAction(target); } catch (error) { flash(error.message || 'Action failed.'); }
 });
 
-function layoutOverlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;}
-function storeLayoutValue(key,device,itemId,placement) { ui.layoutDraft||=structuredClone(ui.game?.layout||{});ui.layoutDraft[key]||={order:[],sizes:{},placements:{},columns:{}};ui.layoutDraft[key].placements||={};ui.layoutDraft[key].placements[device]||={};ui.layoutDraft[key].placements[device][itemId]=placement; }
-function layoutSetPlacement(key,device,itemId,placement){
-  storeLayoutValue(key,device,itemId,placement);
-}
-root.addEventListener('pointerdown',event=>{
-  if(ui.view!=='layout')return;
-  const handle=event.target.closest('[data-layout-drag],[data-layout-resize]'),tile=handle?.closest('[data-layout-id]'),canvas=tile?.closest('[data-layout-canvas]');
-  if(!handle||!tile||!canvas)return;
-  const descriptor=layoutItems(ui.game),itemIndex=descriptor.items.findIndex(item=>item.id===tile.dataset.layoutId),device=canvas.dataset.layoutDevice;
-  if(itemIndex<0)return;
-  snapshotLayoutDraft();ui.layoutSelected=tile.dataset.layoutId;
-  ui.layoutPointer={pointerId:event.pointerId,mode:handle.hasAttribute('data-layout-resize')?'resize':'move',key:descriptor.key,id:tile.dataset.layoutId,device,startX:event.clientX,startY:event.clientY,start:readPlacement(ui.layoutDraft,descriptor.key,tile.dataset.layoutId,itemIndex,descriptor.items.length,device),canvas};
-  handle.setPointerCapture?.(event.pointerId);event.preventDefault();
+let layoutResizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(layoutResizeTimer);
+  layoutResizeTimer = setTimeout(() => {
+    if (ui.view !== 'layout') render();
+  },150);
 });
-window.addEventListener('pointermove',event=>{
-  const active=ui.layoutPointer;if(!active||event.pointerId!==active.pointerId)return;
-  const descriptor=layoutItems(ui.game),cols=layoutColumns(ui.layoutDraft,active.key,active.device),rect=active.canvas.getBoundingClientRect(),styles=getComputedStyle(active.canvas),gap=parseFloat(styles.columnGap)||8,rowStep=(parseFloat(styles.gridAutoRows)||68)+(parseFloat(styles.rowGap)||8),colStep=(rect.width-gap*(cols-1))/cols+gap;
-  const dx=Math.round((event.clientX-active.startX)/colStep),dy=Math.round((event.clientY-active.startY)/rowStep),start=active.start;
-  const next=active.mode==='resize'?{...start,w:Math.max(1,Math.min(cols-start.x+1,start.w+dx)),h:Math.max(1,Math.min(12,start.h+dy))}:{...start,x:Math.max(1,Math.min(cols-start.w+1,start.x+dx)),y:Math.max(1,start.y+dy)};
-  const overlaps=descriptor.items.some((item,index)=>{if(item.id===active.id)return false;return layoutOverlap(next,readPlacement(ui.layoutDraft,descriptor.key,item.id,index,descriptor.items.length,active.device));});if(overlaps)return;
-  layoutSetPlacement(active.key,active.device,active.id,next);
-  const tile=active.canvas.querySelector(`[data-layout-id="${CSS.escape(active.id)}"]`);if(tile){tile.style.gridColumn=`${next.x} / span ${next.w}`;tile.style.gridRow=`${next.y} / span ${next.h}`;const size=tile.querySelector('.layout-tile-size');if(size)size.textContent=`${next.w} × ${next.h}`;}
-  event.preventDefault();
-});
-function finishLayoutPointer(event){if(!ui.layoutPointer||event.pointerId!==ui.layoutPointer.pointerId)return;ui.layoutPointer=null;render();}
-window.addEventListener('pointerup',finishLayoutPointer);window.addEventListener('pointercancel',finishLayoutPointer);
-let layoutResizeTimer;window.addEventListener('resize',()=>{clearTimeout(layoutResizeTimer);layoutResizeTimer=setTimeout(()=>{if(!ui.layoutPointer)render();},150);});
 
 root.addEventListener('change', async event => {
   const target = event.target;
@@ -514,35 +440,7 @@ root.addEventListener('change', async event => {
   if (target.id === 'overview-section') { ui.overviewSection = target.value; render(); }
   if (target.id === 'overview-sort') { ui.overviewSort = target.value; render(); }
   if (target.id === 'overview-recorded') { ui.overviewRecorded = target.checked; render(); }
-  if(target.id==='layout-page'){
-    ui.layoutSurface=target.value;ui.layoutStack=[{surface:target.value,team:ui.layoutTeam,section:ui.layoutSection,category:ui.layoutCategory}];
-    const descriptor=layoutItems(ui.game);ui.layoutSelected=descriptor.items[0]?.id||'';ui.layoutStatus='';render();
-  }
-  if(target.id==='layout-surface'){ui.layoutSurface=target.value;ui.layoutStack=[{surface:target.value,team:ui.layoutTeam,section:ui.layoutSection,category:ui.layoutCategory}];const descriptor=layoutItems(ui.game);ui.layoutSelected=descriptor.items[0]?.id||'';ui.layoutStatus='';render();}
-  if(target.id==='layout-device'){ui.layoutDevice=target.value;render();}
-  if(target.id==='layout-team'){ui.layoutTeam=target.value;ui.layoutCategory=teamPlaybook(ui.game,ui.layoutTeam)[0]?.id||'';if(ui.layoutStack.length)Object.assign(ui.layoutStack.at(-1),{team:ui.layoutTeam,category:ui.layoutCategory});const descriptor=layoutItems(ui.game);ui.layoutSelected=descriptor.items[0]?.id||'';render();}
-  if(target.id==='layout-section'){ui.layoutSection=Number(target.value);if(ui.layoutStack.length)ui.layoutStack.at(-1).section=ui.layoutSection;const descriptor=layoutItems(ui.game);ui.layoutSelected=descriptor.items[0]?.id||'';render();}
-  if(target.id==='layout-category'){ui.layoutCategory=target.value;if(ui.layoutStack.length)ui.layoutStack.at(-1).category=ui.layoutCategory;const descriptor=layoutItems(ui.game);ui.layoutSelected=descriptor.items[0]?.id||'';render();}
-  if(target.id==='layout-columns'){
-    const descriptor=layoutItems(ui.game),key=descriptor.key,device=ui.layoutDevice,nextColumns=Number(target.value),oldLayout=structuredClone(ui.layoutDraft),oldColumns=layoutColumns(oldLayout,key,device);
-    if(!Number.isInteger(nextColumns)||nextColumns<2||nextColumns>12)return render();
-    snapshotLayoutDraft();ui.layoutDraft[key]||={order:[],sizes:{},placements:{},columns:{}};ui.layoutDraft[key].columns||={};
-    const previous=descriptor.items.map((item,index)=>({id:item.id,box:readPlacement(oldLayout,key,item.id,index,descriptor.items.length,device)}));
-    ui.layoutDraft[key].columns[device]=nextColumns;ui.layoutDraft[key].placements||={};ui.layoutDraft[key].placements[device]={};
-    const placed=[];
-    for(const item of previous){const box={...item.box,w:Math.min(nextColumns,item.box.w)};box.x=Math.max(1,Math.min(nextColumns-box.w+1,box.x));while(placed.some(other=>layoutOverlap(box,other))){box.y++;if(box.y>48){ui.layoutDraft=oldLayout;ui.layoutStatus='That column count would make this page too tall. Choose a wider grid.';render();return;}}placed.push(box);storeLayoutValue(key,device,item.id,box);}
-    ui.layoutStatus=`${nextColumns} columns · each cell can be resized independently.`;render();
-  }
-  if(target.matches('[data-layout-field]')){
-    const descriptor=layoutItems(ui.game),key=descriptor.key,selected=descriptor.items.find(item=>item.id===ui.layoutSelected),index=descriptor.items.findIndex(item=>item.id===ui.layoutSelected);if(!selected||index<0)return;
-    const previous=readPlacement(ui.layoutDraft,key,selected.id,index,descriptor.items.length,ui.layoutDevice),next={...previous},field=target.dataset.layoutField,value=Number(target.value),cols=layoutColumns(ui.layoutDraft,key,ui.layoutDevice);
-    if(!Number.isInteger(value)||value<1)return render();snapshotLayoutDraft();
-    if(field==='x')next.x=Math.max(1,Math.min(cols-previous.w+1,value));if(field==='y')next.y=Math.min(48,value);if(field==='w')next.w=Math.max(1,Math.min(cols-next.x+1,value));if(field==='h')next.h=Math.max(1,Math.min(12,value));
-    const collision=descriptor.items.some((item,otherIndex)=>item.id!==selected.id&&layoutOverlap(next,readPlacement(ui.layoutDraft,key,item.id,otherIndex,descriptor.items.length,ui.layoutDevice)));
-    if(collision){ui.layoutUndo.pop();ui.layoutStatus='Cells cannot overlap. Adjust the row, column, or size.';render();return;}
-    storeLayoutValue(key,ui.layoutDevice,selected.id,next);ui.layoutStatus='Position updated. Save & preview to apply it.';render();
-  }
-  if(target.matches('[data-layout-size]')){const {key,id:itemId}=target.dataset,size=target.value;await commit(next=>{next.layout||={};next.layout[key]||={order:[],sizes:{}};next.layout[key].sizes||={};next.layout[key].sizes[itemId]=size;},'Cell size saved');ui.dialog={type:'layout'};render();}
+
 });
 
 root.addEventListener('input', event => {

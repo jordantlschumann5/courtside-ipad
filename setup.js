@@ -185,17 +185,38 @@ export function applySetup(game, setup) {
     next._retainedSuccess = retainedSuccess;
   }
   if (setup.successOutcomes) next.successOutcomes = [...new Set([...setup.successOutcomes, ...(next._retainedSuccess || [])])];
-  if(setup.layout){
-    const remapped={};
-    for(const [layoutKey,value] of Object.entries(setup.layout)){
-      let targetKey=layoutKey,order=[...(value.order||[])],sizes={...(value.sizes||{})};
-      const roster=layoutKey.match(/^roster:(home|away)$/),board=layoutKey.match(/^board:(home|away):(\d+)$/),plays=layoutKey.match(/^plays:(home|away):(.+)$/);
-      if(roster){const team=roster[1];order=order.map(oldId=>playerIdMap[`${team}:${oldId}`]||oldId);sizes=Object.fromEntries(Object.entries(sizes).map(([oldId,size])=>[playerIdMap[`${team}:${oldId}`]||oldId,size]));}
-      if(board){const team=board[1];order=order.map(oldId=>oldId.startsWith('category:')?`category:${categoryIdMap[`${team}:${oldId.slice(9)}`]||oldId.slice(9)}`:oldId);sizes=Object.fromEntries(Object.entries(sizes).map(([oldId,size])=>[oldId.startsWith('category:')?`category:${categoryIdMap[`${team}:${oldId.slice(9)}`]||oldId.slice(9)}`:oldId,size]));}
-      if(plays){const team=plays[1],oldCategory=plays[2],newCategory=categoryIdMap[`${team}:${oldCategory}`]||oldCategory;targetKey=`plays:${team}:${newCategory}`;order=order.map(oldId=>playIdMap[`${team}:${oldCategory}:${oldId}`]||oldId);sizes=Object.fromEntries(Object.entries(sizes).map(([oldId,size])=>[playIdMap[`${team}:${oldCategory}:${oldId}`]||oldId,size]));}
-      remapped[targetKey]={...value,order,sizes};
+  if (setup.layout) {
+    const remapped = {};
+    for (const [layoutKey,value] of Object.entries(setup.layout)) {
+      let targetKey = layoutKey;
+      let remapId = id => id;
+      const roster = layoutKey.match(/^roster:(home|away)$/);
+      const board = layoutKey.match(/^board:(home|away):(\d+)$/);
+      const plays = layoutKey.match(/^plays:(home|away):(.+)$/);
+      if (roster) {
+        remapId = id => playerIdMap[roster[1] + ':' + id] || id;
+      } else if (board) {
+        remapId = id => {
+          if (!id.startsWith('category:')) return id;
+          const category = id.slice(9);
+          return 'category:' + (categoryIdMap[board[1] + ':' + category] || category);
+        };
+      } else if (plays) {
+        const prefix = plays[1] + ':' + plays[2];
+        targetKey = 'plays:' + plays[1] + ':' + (categoryIdMap[prefix] || plays[2]);
+        remapId = id => playIdMap[prefix + ':' + id] || id;
+      }
+      const remapEntries = object => Object.fromEntries(Object.entries(object || {})
+        .map(([id,item]) => [remapId(id),item]));
+      remapped[targetKey] = {
+        ...value,
+        order:(value.order || []).map(remapId),
+        sizes:remapEntries(value.sizes),
+        placements:Object.fromEntries(Object.entries(value.placements || {})
+          .map(([device,boxes]) => [device,remapEntries(boxes)]))
+      };
     }
-    next.layout=remapped;
+    next.layout = remapped;
   }
   delete next._retainedSuccess;
   next.updatedAt = new Date().toISOString();
