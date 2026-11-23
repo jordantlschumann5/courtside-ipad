@@ -13,9 +13,16 @@ const headerButtons = [
   ['setup','Setup file'],['export','Export'],['more','More']
 ];
 const boardRoot = {
-  portrait: [[0,0,2,2],[2,0,2,2],[0,2,2,1],[2,2,2,2],[0,4,4,1]],
+  portrait: [[0,0,2,2],[2,0,2,2],[0,2,4,1],[0,3,4,2],[0,5,4,1]],
   landscape: [[0,0,3,2],[3,0,3,2],[0,2,2,1],[2,2,4,2],[0,4,6,1]]
 };
+const teamCounters = {
+  portrait: [[0,0,4,1],[0,1,2,1],[2,1,2,1]],
+  landscape: [[0,0,6,1],[0,1,3,1],[3,1,3,1]]
+};
+const usesSharedDefault = key => key === 'editor-board' || key === 'game-controls' ||
+  key === 'play-area' || key === 'shot-tracker' ||
+  /^(team-interior|team-metrics|roster|timeout-types|timeout-step|sections|board|plays):/.test(key);
 const titleCase = value => value.charAt(0).toUpperCase() + value.slice(1);
 
 function placement(index,columns,perRow) {
@@ -25,12 +32,15 @@ function placement(index,columns,perRow) {
   return [left,Math.floor(index / slots),right-left,1];
 }
 
-export function createLayoutModel(game,{activeTeam,section,outcomes,total,actions,entries}) {
+export function createLayoutModel(game,{activeTeam,section,outcomes,total,actions,entries,legacyDevice,legacyColumns,deviceMode}) {
   const pages = {};
   const grids = new Map();
+  const gridsByKey = new Map();
   function add(page,name,key,items,{count,perRow = 2,boxes} = {}) {
     (pages[page] ||= {})[name] = items;
-    grids.set(page + '/' + name,{page,name,key,items,count,perRow,boxes});
+    const grid = {page,name,key,items,count,perRow,boxes};
+    grids.set(page + '/' + name,grid);
+    gridsByKey.set(key,grid);
   }
   const teamNames = ['home','away'].map(team=>game.teams[team].name);
   const contextTeam = game.teams[activeTeam].name;
@@ -56,7 +66,7 @@ export function createLayoutModel(game,{activeTeam,section,outcomes,total,action
       tile('timeouts','Timeouts',['30 sec · ' + metrics.timeouts30 + '/3','60 sec · ' + metrics.timeouts60 + '/1'],label + ' · timeout controls'),
       tile('fouls','Team fouls',[String(metrics.fouls ?? 0)]),
       tile('free-throws','Free throws',[metrics.ftMade + '–' + metrics.ftAttempts])
-    ],{perRow:3});
+    ],{boxes:teamCounters});
     add('Board',label + ' · timeout controls','timeout-types:' + team,[30,60].map(duration=>
       tile(String(duration),duration + '-second',[metrics['timeouts' + duration] + '/' + (duration === 30 ? 3 : 1)],label + ' · ' + duration + 's stepper')));
     for (const duration of [30,60]) {
@@ -77,8 +87,9 @@ export function createLayoutModel(game,{activeTeam,section,outcomes,total,action
     tile('sections','Section tabs',Object.values(game.sectionNames[activeTeam]),'Section tabs'),
     tile('categories','Play categories',[game.sectionNames[activeTeam][section] || 'Section ' + section],startCategories)
   ],{perRow:1});
-  add('Board','Section tabs','sections:' + activeTeam,Object.entries(game.sectionNames[activeTeam]).map(([number,name])=>
-    tile(number,name,[],'Section ' + number + ' · categories','section')),{perRow:3});
+  const sectionTabs = Object.entries(game.sectionNames[activeTeam]).map(([number,name])=>
+    tile(number,name,[],'Section ' + number + ' · categories','section'));
+  add('Board','Section tabs','sections:' + activeTeam,sectionTabs,{count:3,perRow:3});
   const sections = new Set([String(section),...Object.keys(game.sectionNames[activeTeam])]);
   for (const number of sections) {
     const categories = game.playbooks[activeTeam].filter(item=>String(item.section)===number);
@@ -146,10 +157,8 @@ export function createLayoutModel(game,{activeTeam,section,outcomes,total,action
   ]);
   add('Export','Controls','export-options',[tile('export','Backup JSON'),tile('export-csv','Export entries CSV')]);
 
-  function getDefault(page,scope,mode) {
-    const grid = grids.get(page + '/' + scope);
+  function resolve(grid,mode,saved) {
     if (!grid) return {columns:mode==='portrait'?4:6,positions:{}};
-    const saved = readStudioGrid(game.layout,grid.key,mode);
     const count = saved?.columns || grid.count || (mode==='portrait'?4:6);
     const positions = {};
     const occupied = [];
@@ -175,13 +184,40 @@ export function createLayoutModel(game,{activeTeam,section,outcomes,total,action
     return {columns:count,positions};
   }
 
-  function persist(layout,draft,columns) {
+  function savedGrid(key,mode) {
+    const entry = game.layout?.[key];
+    const device = mode === deviceMode && legacyDevice
+      ? legacyDevice : mode === 'portrait' ? 'tablet' : 'desktop';
+    return readStudioGrid(game.layout,key,mode) ||
+      (hasLegacyPlacement(entry,device) ? readGrid(entry,device,legacyColumns?.(key,device)) : null);
+  }
+
+  function getDefault(page,scope,mode) {
+    const grid = grids.get(page + '/' + scope);
+    return resolve(grid,mode,grid && savedGrid(grid.key,mode));
+  }
+
+  function getLiveGrid(key,mode,tabletLayout) {
+    const grid = gridsByKey.get(key);
+    if (!grid) return null;
+    const studio = readStudioGrid(game.layout,key,mode);
+    const legacyBoard = ['board-main','team-cards'].some(id=>
+      hasLegacyPlacement(game.layout?.[id],legacyDevice));
+    if (!studio && key === 'editor-board' && legacyBoard) return null;
+    if (!studio && (!tabletLayout || !usesSharedDefault(key))) return null;
+    // The phone keeps its automatic board layout unless this grid has a saved edit.
+    return resolve(grid,mode,studio || savedGrid(key,mode));
+  }
+
+  function persist(layout,draft,columns,active) {
     const result = structuredClone(layout || {});
     for (const [scope,grid] of grids) {
       for (const mode of ['portrait','landscape']) {
         const id = scope + '/' + mode;
         const selectedCount = Number(columns[id]) || getDefault(grid.page,grid.name,mode).columns;
-        const boxes = draft[id + '/' + selectedCount];
+        const current = active?.page === grid.page && active.scope === grid.name && active.mode === mode;
+        const boxes = draft[id + '/' + selectedCount] ||
+          (current ? getDefault(grid.page,grid.name,mode).positions : null);
         if (!boxes) continue;
         const key = orientationKey(mode);
         const entry = result[grid.key] ||= {};
@@ -194,7 +230,7 @@ export function createLayoutModel(game,{activeTeam,section,outcomes,total,action
     }
     return result;
   }
-  return {pages,getDefault,persist,teamNames};
+  return {pages,getDefault,getLiveGrid,persist,teamNames};
 }
 
 function overlap([x,y,w,h],[a,b,c,d]) {
@@ -202,9 +238,13 @@ function overlap([x,y,w,h],[a,b,c,d]) {
 }
 
 export function readStudioGrid(layout,key,mode) {
-  const entry = layout?.[key];
-  const device = orientationKey(mode);
-  const columns = Number(entry?.columns?.[device]);
+  return readGrid(layout?.[key],orientationKey(mode));
+}
+function hasLegacyPlacement(entry,device) {
+  return Boolean(entry?.columns?.[device] || Object.keys(entry?.placements?.[device] || {}).length);
+}
+function readGrid(entry,device,fallback) {
+  const columns = Number(entry?.columns?.[device] ?? fallback);
   if (!Number.isInteger(columns) || columns < 2 || columns > 12) return null;
   const placements = Object.fromEntries(Object.entries(entry.placements?.[device] || {}).filter(([,box])=>
     box && [box.x,box.y,box.w,box.h].every(value=>Number.isInteger(value) && value>0) &&
@@ -220,33 +260,32 @@ export function readStudioGrid(layout,key,mode) {
   return {columns,placements:clean};
 }
 
-export function applyStudioLayout(root,game,{mode,activeTeam,section}) {
-  if (!Object.values(game.layout || {}).some(entry=>entry?.columns?.[orientationKey(mode)])) return;
+export function applyStudioLayout(root,model,{mode,activeTeam,section,tabletLayout}) {
   const get = (selector,parent = root) => parent.querySelector(selector);
   const children = (selector,parent = root) => [...parent.querySelectorAll(selector)];
-  const available = key => readStudioGrid(game.layout,key,mode);
+  const resolved = new Map();
+  function available(key) {
+    if (!resolved.has(key)) resolved.set(key,model.getLiveGrid(key,mode,tabletLayout));
+    return resolved.get(key);
+  }
   const select = (parent,selectors) => Object.fromEntries(
     Object.entries(selectors).map(([id,selector])=>[id,get(selector,parent)]));
   const marked = parent => Object.fromEntries(
     [...parent.children].filter(node=>node.dataset.layoutItem).map(node=>[node.dataset.layoutItem,node]));
   function grid(parent,key,tiles) {
     if (!parent) return;
-    const saved = available(key);
-    if (!saved) return;
+    const layout = available(key);
+    if (!layout) return;
     parent.classList.add('studio-grid-applied');
-    parent.style.gridTemplateColumns = 'repeat(' + saved.columns + ',minmax(0,1fr))';
-    const visible = Object.entries(tiles).filter(([,node])=>node);
-    let blankRow = Math.max(1,...visible.map(([id])=>{
-      const box = saved.placements[id];
-      return box ? box.y+box.h : 1;
-    }));
-    for (const [id,node] of visible) {
-      const {x,y,w,h} = saved.placements[id] || {x:1,y:blankRow++,w:saved.columns,h:1};
-      node.style.gridColumn = x + ' / span ' + w;
-      node.style.gridRow = y + ' / span ' + h;
+    parent.style.gridTemplateColumns = 'repeat(' + layout.columns + ',minmax(0,1fr))';
+    for (const [id,node] of Object.entries(tiles)) {
+      const box = layout.positions[id];
+      if (!node || !box) continue;
+      const [x,y,w,h] = box;
+      node.style.gridColumn = (x+1) + ' / span ' + w;
+      node.style.gridRow = (y+1) + ' / span ' + h;
     }
   }
-  // Group elements only when the coach edits that part of the layout.
   function group(parent,key,tiles) {
     if (!parent || !available(key)) return;
     const nodes = Object.values(tiles).filter(Boolean);
@@ -289,7 +328,7 @@ export function applyStudioLayout(root,game,{mode,activeTeam,section}) {
     grid(utility,'game-controls',{quarter,filter,undo,rules});
   }
   const workspace = get('.workspace');
-  if (workspace) group(workspace,'play-area',select(workspace,{sections:'.section-tabs',categories:'.section-stage'}));
+  if (workspace) group(workspace,'play-area',select(workspace,{sections:'.section-tabs',categories:'.section-content'}));
   for (const team of ['home','away']) {
     const card = get('.team-card.' + team);
     if (!card) continue;

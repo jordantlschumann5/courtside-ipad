@@ -92,7 +92,7 @@
 @media(max-width:430px){.result-edit-row{grid-template-columns:1fr 1fr 55px}.result-check{grid-column:span 1}.header-actions .header-button{padding:7px 8px}}
 
 .shot-tracker-page{max-width:1500px;margin:0 auto}.shot-tracker-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:8px 0 18px;padding:12px 14px;background:#fff;border:1px solid #c8d5e0;border-radius:11px}.shot-team-tabs{max-width:min(60vw,520px)}.shot-team-tabs button{min-width:100px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.shot-medal-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.shot-medal-card{min-width:0;min-height:290px;display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:18px;padding:22px 14px;background:#fff;border:1px solid #c5d2de;border-top:5px solid #d3a92d;border-radius:13px;box-shadow:0 5px 18px #1737560b}.shot-medal-card.silver{border-top-color:#8998a7}.shot-medal-card.bronze{border-top-color:#b9794b}.shot-medal-title{text-align:center;display:flex;flex-direction:column;gap:4px}.shot-medal-title span{font-family:'Barlow Condensed',Arial,sans-serif;font-size:25px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:#173957}.shot-medal-title small{color:#6d8397;font-size:11px}.shot-count{font-family:'Barlow Condensed',Arial,sans-serif;font-size:clamp(64px,8vw,104px);line-height:1;color:#132f4d;font-variant-numeric:tabular-nums}.shot-stepper{display:grid;grid-template-columns:58px minmax(50px,1fr) 58px;align-items:center;gap:9px;width:100%;max-width:330px}.shot-stepper button{height:52px;border:1px solid #aebfce;background:#f7fafc;color:#143d66;border-radius:9px;font-size:29px;font-weight:800}.shot-stepper button:hover:not(:disabled){background:#eaf2f8;border-color:#6c8eac}.shot-stepper button:disabled{opacity:.4}.shot-stepper span{text-align:center;color:#6b8095;font-size:10px;font-weight:900;letter-spacing:.1em}.shot-medal-card.gold .shot-count{color:#a77c10}.shot-medal-card.silver .shot-count{color:#647583}.shot-medal-card.bronze .shot-count{color:#9a5e35}
-@media(max-width:700px){.shot-tracker-toolbar{align-items:stretch;flex-direction:column}.shot-team-tabs{max-width:100%;width:100%}.shot-team-tabs button{flex:1;max-width:none}.shot-medal-grid{gap:8px}.shot-medal-card{min-height:230px;padding:16px 8px;gap:12px;border-radius:10px}.shot-medal-title span{font-size:19px}.shot-medal-title small{font-size:9px;min-height:22px}.shot-stepper{grid-template-columns:36px minmax(24px,1fr) 36px;gap:3px}.shot-stepper button{height:43px;font-size:24px}.shot-stepper span{font-size:8px;letter-spacing:.04em}.shot-count{font-size:clamp(48px,14vw,74px}}
+@media(max-width:700px){.shot-tracker-toolbar{align-items:stretch;flex-direction:column}.shot-team-tabs{max-width:100%;width:100%}.shot-team-tabs button{flex:1;max-width:none}.shot-medal-grid{gap:8px}.shot-medal-card{min-height:230px;padding:16px 8px;gap:12px;border-radius:10px}.shot-medal-title span{font-size:19px}.shot-medal-title small{font-size:9px;min-height:22px}.shot-stepper{grid-template-columns:36px minmax(24px,1fr) 36px;gap:3px}.shot-stepper button{height:43px;font-size:24px}.shot-stepper span{font-size:8px;letter-spacing:.04em}.shot-count{font-size:clamp(48px,14vw,74px)}}
 @media(max-width:380px){.shot-medal-grid{gap:6px}.shot-medal-card{padding-inline:5px}.shot-stepper{grid-template-columns:32px minmax(18px,1fr) 32px}.shot-stepper button{height:39px}}
 
 /* Bento placement system and visual editor. */
@@ -101,7 +101,7 @@
 .team-grid.bento-grid{align-items:start}.team-metrics.bento-grid{grid-auto-rows:minmax(44px,auto);padding:0 15px 12px;gap:7px}.team-metrics.bento-grid>.metric{grid-column:auto;min-width:0;min-height:46px}.team-metrics .timeout-metric{grid-column:auto;grid-row:auto}.team-metrics .foul-metric,.team-metrics .ft-metric{grid-column:auto;grid-row:auto}
 .team-metrics .timeout-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.team-metrics .timeout-type{justify-content:space-between}.team-metrics .metric>span{min-width:0}.team-metrics .metric-controls{flex:none}
 .roster-strip.bento-grid{grid-auto-rows:minmax(54px,auto);padding:9px 13px 12px;overflow:visible}.roster-strip.bento-grid .player-chip{min-width:0;max-width:none;width:100%;flex:none}.section-tabs.bento-grid{grid-auto-rows:minmax(44px,auto)}.section-grid.bento-grid{grid-auto-rows:minmax(80px,auto);align-items:stretch}.compact-plays.bento-grid{grid-auto-rows:minmax(54px,auto)}.shot-medal-grid.bento-grid{grid-auto-rows:minmax(230px,auto)}.outcome-grid.bento-grid{grid-auto-rows:minmax(75px,auto)}.overview-outcome-tiles.bento-grid{grid-auto-rows:minmax(52px,auto)}.overview-outcomes.bento-grid{grid-auto-rows:minmax(30px,auto)}
-@media(max-width:700px){.board-main-grid{gap:9px}.team-metrics.bento-grid{padding:0 9px 10px;gap:5px}.team-metrics .timeout-metric{padding:6px}.team-metrics .timeout-controls{grid-template-columns:1fr}.team-metrics .timeout-type{gap:4px}.team-metrics .timeout-type>span{font-size:9px}.team-metrics .timeout-type .metric-controls button{width:22px;height:22px}.team-metrics .timeout-type .metric-controls strong{min-width:20px;font-size:10px}.roster-strip.bento-grid{gap:5px;padding-inline:8px}.roster-strip.bento-grid .player-chip{min-width:0}.layout-studio-head{padding:12px}.layout-studio-head h2{font-size:25px}.layout-studio-head p{font-size:10px}.layout-studio-toolbar label{flex:1 1 130px}.layout-studio-toolbar select{max-width:none;width:100%;font-size:11px}.layout-studio-toolbar label:first-child{flex-basis:100%}.layout-studio-toolbar label:first-child select{min-width:0}.layout-studio-actions{flex-wrap:wrap}.layout-studio-actions button{flex:1;min-width:95px;padding:8px}.layout-preview-caption{padding:9px 12px 6px}.layout-canvas-wrap{padding:0 7px 9px}.layout-canvas{grid-auto-rows:58px;gap:5px;padding:6px}.layout-preview-tile{border-radius:7px;padding:9px 23px 8px 31px}.layout-drag-handle{left:3px;top:3px;width:23px;height:26px;font-size:15px}.layout-tile-size{right:4px;top:4px}.layout-resize-handle{width:18px;height:18px}.layout-studio-foot{font-size:9px;padding:8px 11px}}
+@media(max-width:700px){.board-main-grid{gap:9px}.team-metrics.bento-grid{padding:0 9px 10px;gap:5px}.team-metrics .timeout-metric{padding:6px}.team-metrics .timeout-controls{grid-template-columns:1fr}.team-metrics .timeout-type{gap:4px}.team-metrics .timeout-type>span{font-size:9px}.team-metrics .timeout-type .metric-controls button{width:22px;height:22px}.team-metrics .timeout-type .metric-controls strong{min-width:20px;font-size:10px}.roster-strip.bento-grid{gap:5px;padding-inline:8px}.roster-strip.bento-grid .player-chip{min-width:0}}
 
 /* Separate the three 30-second and one 60-second timeout allotments. */
 .timeout-metric{align-items:stretch;flex-direction:column;justify-content:flex-start;gap:5px;padding:7px 9px}
@@ -135,7 +135,62 @@
 .studio-grid-applied > button { white-space: normal; }
 .studio-grid-group { min-width: 0; }
 .studio-board-grid { margin-top: 10px; }
-.studio-board-grid .team-card { container-type: inline-size; }
+.studio-board-grid > .team-card { container-type: inline-size; align-self: start; }
+.studio-board-grid > .utility-row { margin: 0; align-content: start; }
+.studio-board-grid .team-heading { flex-wrap: wrap; gap: 6px 12px; }
+.team-metrics.bento-grid > .timeout-metric {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  align-content: start;
+  justify-content: stretch;
+  justify-items: stretch;
+  gap: 5px;
+}
+.team-metrics .timeout-controls { width: 100%; }
+.team-metrics .timeout-type {
+  display: grid;
+  grid-template-columns: minmax(0,1fr);
+  align-content: start;
+  container-type: inline-size;
+}
+.team-metrics .timeout-type > span {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.team-metrics .timeout-type .metric-controls {
+  display: grid;
+  grid-template-columns: repeat(3,minmax(0,1fr));
+  width: 100%;
+  min-width: 0;
+  gap: 3px;
+  justify-items: center;
+}
+.team-metrics .timeout-type .metric-controls button {
+  width: 100%;
+  min-width: 0;
+  max-width: 38px;
+  height: 32px;
+  padding: 0;
+}
+.team-metrics .timeout-type .metric-controls strong {
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+  font-size: clamp(9px,12cqw,13px);
+}
+.studio-grid-applied.section-tabs { gap: 0; }
+.studio-grid-applied.section-tabs button { padding-inline: 10px; }
+.studio-grid-applied.section-tabs button span { white-space: normal; }
+.studio-grid-applied.utility-row > .quarter-wrap,
+.studio-grid-applied.utility-row > .filter-group { flex-wrap: wrap; justify-content: flex-start; }
+.studio-grid-applied.utility-row .segmented,
+.studio-grid-applied.utility-row .quarter-group { flex-wrap: wrap; }
+.studio-grid-applied.utility-row > button { padding-inline: 8px; }
+.studio-grid-applied.team-metrics > .metric:not(.timeout-metric) { flex-wrap: wrap; gap: 3px 8px; }
+.section-content { min-width: 0; }
+.studio-board-grid .workspace-top,
+.studio-board-grid .workspace-controls,
+.studio-board-grid .empty-section { flex-wrap: wrap; }
 .studio-grid-applied.shot-medal-grid { grid-auto-rows: minmax(72px,auto); }
 .studio-grid-applied.outcome-grid { grid-auto-rows: minmax(46px,auto); }
 .studio-grid-applied.metric-controls { align-items: center; }
@@ -146,7 +201,7 @@
 .studio-grid-applied .header-button { min-width: 0; }
 .studio-grid-applied.tool-list button { width: 100%; }
 @container (max-width: 390px) {
-  .team-metrics .timeout-controls:not(.studio-grid-applied) { grid-template-columns: 1fr; }
-  .timeout-type { flex-wrap: wrap; }
+  .team-heading { padding: 9px 11px; }
+  .team-heading h2 { font-size: clamp(19px,7cqw,28px); }
   .roster-strip.bento-grid .player-chip { flex-wrap: wrap; padding-inline: 4px; }
 }

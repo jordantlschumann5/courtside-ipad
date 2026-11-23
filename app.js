@@ -1,5 +1,5 @@
-import { mountLayoutEditor } from './layout-editor.js?v=18';
-import { createLayoutModel, applyStudioLayout, ipadOrientation } from './layout-model.js?v=19';
+import { mountLayoutEditor } from './layout-editor.js?v=21';
+import { createLayoutModel, applyStudioLayout, ipadOrientation } from './layout-model.js?v=21';
 import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, OUTCOME_GROUP_LABELS, outcomeGroup, gameOutcomes, getOutcome, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=16';
 import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=18';
 import { buildOverview } from './overview.js?v=16';
@@ -138,13 +138,13 @@ function dashboard(game) {
       const count = teamPlaybook(game).filter(category => Number(category.section) === number).reduce((sum, category) => sum + category.plays.length, 0);
       return `<button data-layout-item="${number}"${gridStyle(game,`sections:${ui.activeTeam}`,String(number),index,list.length)} data-action="section" data-section="${number}" class="${ui.section === number ? 'active' : ''}"><span>${esc(game.sectionNames[ui.activeTeam]?.[number] || `Section ${number}`)}</span><small>${count} plays</small></button>`;
     }).join('')}</nav>
-    <div class="summary-strip"><span>${esc(teamName(game, ui.activeTeam))} · ${ui.filter === 'all' ? 'Whole game' : `Q${ui.filter}`}</span><strong>${calls} calls</strong><strong>${calls ? Math.round(successes / calls * 100) : 0}% success</strong><strong>${calls ? (points / calls).toFixed(1) : '0.0'} pts/call</strong></div>
+    <div class="section-content"><div class="summary-strip"><span>${esc(teamName(game, ui.activeTeam))} · ${ui.filter === 'all' ? 'Whole game' : `Q${ui.filter}`}</span><strong>${calls} calls</strong><strong>${calls ? Math.round(successes / calls * 100) : 0}% success</strong><strong>${calls ? (points / calls).toFixed(1) : '0.0'} pts/call</strong></div>
     <div class="section-stage"><div class="section-grid bento-grid" data-layout-surface="board-categories" style="--bento-columns:${layoutColumns(game,boardKey,currentLayoutDevice())}">
       ${cards.map((item,index,list) => item.kind==='category' ? `<section class="category-card${sizeClass(game,boardKey,`category:${item.id}`)}" data-layout-item="category:${item.id}"${gridStyle(game,boardKey,`category:${item.id}`,index,list.length)}><div class="category-title"><h3>${esc(item.name)}</h3><small>${item.plays.length} plays</small></div><div class="compact-plays bento-grid" data-layout-surface="board-plays" style="--bento-columns:${layoutColumns(game,`plays:${ui.activeTeam}:${item.id}`,currentLayoutDevice())}">${item.plays.length ? orderByLayout(game,`plays:${ui.activeTeam}:${item.id}`,item.plays).map((play,playIndex,playList) => {
         const record = entries.get(`${ui.activeTeam}:${item.id}:${play.id}`);
         return `<button class="compact-play${sizeClass(game,`plays:${ui.activeTeam}:${item.id}`,play.id)}" data-layout-item="${esc(play.id)}"${gridStyle(game,`plays:${ui.activeTeam}:${item.id}`,play.id,playIndex,playList.length)} data-action="choose-play" data-category="${item.id}" data-play="${play.id}"><b>${esc(play.name)}</b><small>${record ? `${record.successes}/${record.calls} · ${record.points} pts` : 'Tap to record'}</small></button>`;
       }).join('') : '<span class="muted">No plays yet</span>'}</div></section>` : `<button class="direct-action${sizeClass(game,boardKey,`action:${item.id}`)}" data-layout-item="action:${item.id}"${gridStyle(game,boardKey,`action:${item.id}`,index,list.length)} data-action="direct" data-direct="${item.id}"><strong>${esc(item.name)}</strong><small>${item.id === 'extra' ? 'Write a short entry' : 'Choose a result'}</small></button>`).join('')}
-    </div>${!categories.length && !direct.length ? '<div class="empty-section"><p>This section is empty.</p><button class="primary" data-action="edit-playbook">Add categories or move actions here</button></div>' : ''}</div>
+    </div>${!categories.length && !direct.length ? '<div class="empty-section"><p>This section is empty.</p><button class="primary" data-action="edit-playbook">Add categories or move actions here</button></div>' : ''}</div></div>
   </section>`;
 }
 
@@ -189,12 +189,20 @@ function overviewPage(game) {
 }
 
 function renderGame() {
-  const game = ui.game, total = totals(game), entries = activeEvents(game);
+  const game = ui.game, entryCount = activeEvents(game).length;
   return `${ui.view==='layout'?'':`<header class="app-header"><div class="brand"><span class="brand-mark">C</span><div><span class="brand-name">COURTSIDE</span><small>OFFLINE GAME TRACKER</small></div></div>
     <div class="game-heading"><label class="sr-only" for="game-picker">Game</label><select id="game-picker" data-action="switch-game">${ui.games.slice().sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(item => `<option value="${item.id}" ${item.id === game.id ? 'selected' : ''}>${esc(item.name)}</option>`).join('')}</select><button class="header-add" data-action="new-game" title="New game">＋</button></div>
-    <div class="header-actions"><span class="local-badge"><span class="local-dot"></span>Saved locally</span>${ui.view==='layout'?'<button data-action="show-board" class="header-button">Back to board</button>':`<button data-action="show-board" class="header-button ${ui.view === 'board' ? 'selected' : ''}">Board</button><button data-action="show-overview" class="header-button ${ui.view === 'overview' ? 'selected' : ''}">Overview</button><button data-action="show-history" class="header-button ${ui.view === 'history' ? 'selected' : ''}">Entries (${entries.length})</button><button data-action="show-shots" class="header-button ${ui.view === 'shot-tracker' ? 'selected' : ''}">Shot tracker</button><button data-action="layout" class="header-button">Edit layout</button><button data-action="calculator" class="header-button">PPP Calc</button><button data-action="setup" class="header-button">Setup file</button><button data-action="export" class="header-button">Export</button><button data-action="more" class="header-button">More</button>`}</div>
+    <div class="header-actions"><span class="local-badge"><span class="local-dot"></span>Saved locally</span>${ui.view==='layout'?'<button data-action="show-board" class="header-button">Back to board</button>':`<button data-action="show-board" class="header-button ${ui.view === 'board' ? 'selected' : ''}">Board</button><button data-action="show-overview" class="header-button ${ui.view === 'overview' ? 'selected' : ''}">Overview</button><button data-action="show-history" class="header-button ${ui.view === 'history' ? 'selected' : ''}">Entries (${entryCount})</button><button data-action="show-shots" class="header-button ${ui.view === 'shot-tracker' ? 'selected' : ''}">Shot tracker</button><button data-action="layout" class="header-button">Edit layout</button><button data-action="calculator" class="header-button">PPP Calc</button><button data-action="setup" class="header-button">Setup file</button><button data-action="export" class="header-button">Export</button><button data-action="more" class="header-button">More</button>`}</div>
   </header>`}
-  ${ui.view === 'history' ? historyPage(game) : ui.view === 'overview' ? overviewPage(game) : ui.view === 'shot-tracker' ? shotTrackerPage(game) : `
+  ${renderGamePage(game,ui.view)}${renderDialog()}`;
+}
+
+function renderGamePage(game,view) {
+  if (view === 'history') return historyPage(game);
+  if (view === 'overview') return overviewPage(game);
+  if (view === 'shot-tracker') return shotTrackerPage(game);
+  const total = totals(game), entries = activeEvents(game);
+  return `
   <main class="main-content board-page"><div class="board-main-grid bento-grid" data-layout-surface="board-main" style="--bento-columns:${layoutColumns(game,'board-main',currentLayoutDevice())}">
     <div class="game-meta" data-layout-item="game-meta"${gridStyle(game,'board-main','game-meta',0,4)}><div><span class="section-eyebrow">${esc(game.date)} · ${entries.length} ENTRIES</span><h1>${esc(game.name)}</h1></div><div class="quarter-wrap"><span>Recording in</span><div class="quarter-group">${[1,2,3,4].map(number => `<button data-action="quarter" data-quarter="${number}" class="${game.quarter === number ? 'active' : ''}">Q${number}</button>`).join('')}</div></div></div>
     <div class="team-grid bento-grid" data-layout-item="team-grid"${gridStyle(game,'board-main','team-grid',1,4)} data-layout-surface="team-cards" style="--bento-columns:${layoutColumns(game,'team-cards',currentLayoutDevice())}">${teamCard(game, 'home', total)}${teamCard(game, 'away', total)}</div>
@@ -202,7 +210,7 @@ function renderGame() {
     <div data-layout-item="workspace"${gridStyle(game,'board-main','workspace',3,4)}>${dashboard(game)}</div>
     </div>
     <footer>One-iPad mode · No server connection or Wi-Fi needed during the game · Export a backup after each game</footer>
-  </main>`}${renderDialog()}`;
+  </main>`;
 }
 
 function renderWelcome() {
@@ -259,20 +267,52 @@ function playRow(play) { return `<div class="edit-row" data-play-row data-id="${
 function actionRow(action) { return `<div class="edit-row action-edit-row" data-action-row data-id="${esc(action.id)}"><input aria-label="Action name" placeholder="Action name" maxlength="60" value="${esc(action.name)}"><select aria-label="Action section" data-action-section>${Object.entries(ui.game.sectionNames[ui.dialog.team]).sort((a,b)=>Number(a[0])-Number(b[0])).map(([number,label]) => `<option value="${number}" ${Number(action.section) === Number(number) ? 'selected' : ''}>${esc(label)}</option>`).join('')}</select><button type="button" data-action="remove-row" aria-label="Remove action">×</button></div>`; }
 function resultRow(option) { return `<div class="edit-row result-edit-row ${option.enabled===false?'is-archived':''}" data-result-row data-id="${esc(option.id)}"><input aria-label="Result name" placeholder="Result name" maxlength="80" value="${esc(option.label)}"><input aria-label="Button label" placeholder="Button label" maxlength="40" value="${esc(option.short||option.label)}"><label class="result-output">Counts as<select aria-label="Counts as" data-result-output>${Object.entries(OUTCOME_GROUP_LABELS).map(([value,label])=>`<option value="${value}" ${outcomeGroup(option)===value?'selected':''}>${esc(label)}</option>`).join('')}</select></label><label class="result-points">Pts<input aria-label="Result points" type="number" min="0" max="10" step="1" value="${Number(option.points)||0}"></label><label class="result-check"><input type="checkbox" data-result-success ${ui.game.successOutcomes.includes(option.id)?'checked':''}>Success</label><label class="result-check"><input type="checkbox" data-result-enabled ${option.enabled===false?'':'checked'}>Shown</label></div>`; }
 
+function gameLayoutModel(game) {
+  return createLayoutModel(game,{
+    activeTeam:ui.activeTeam,section:ui.section,outcomes:gameOutcomes(game),
+    total:totals(game),actions:actionRows(game,ui.activeTeam),entries:activeEvents(game).length,
+    legacyDevice:currentLayoutDevice(),deviceMode:ipadOrientation(),
+    legacyColumns:(key,device)=>layoutColumns(game.layout,key,device)
+  });
+}
+
+function applyGameLayout(container,game,mode = ipadOrientation(),tabletLayout = window.innerWidth >= 700) {
+  applyStudioLayout(container,gameLayoutModel(game),{
+    mode,activeTeam:ui.activeTeam,section:ui.section,tabletLayout
+  });
+}
+
+function mountGamePreview(host,game,view,mode) {
+  const preview = document.createElement('div');
+  preview.className = 'cs-rendered-page';
+  const shadow = preview.attachShadow({mode:'open'});
+  const stylesheet = document.querySelector('link[rel="stylesheet"][href*="styles.css"]');
+  if (stylesheet) shadow.append(stylesheet.cloneNode());
+  const content = document.createElement('div');
+  content.inert = true;
+  content.innerHTML = renderGamePage(game,view);
+  applyGameLayout(content,game,mode,true);
+  shadow.append(content);
+  host.append(preview);
+}
+
 function openLayoutEditor(game) {
   const previousView = ui.view;
-  const model = createLayoutModel(game,{
-    activeTeam:ui.activeTeam,section:ui.section,outcomes:gameOutcomes(game),
-    total:totals(game),actions:actionRows(game,ui.activeTeam),entries:activeEvents(game).length
-  });
+  const model = gameLayoutModel(game);
   ui.dialog = null;
   ui.selectedPlay = null;
   ui.view = 'layout';
   root.innerHTML = '<main class="courtside-layout-host" aria-label="Layout editor"></main>';
   mountLayoutEditor(root.firstElementChild,{
     ...model,gameName:game.name,initialOrientation:ipadOrientation(),
-    async onSave(draft,columns) {
-      const updated = model.persist(ui.game.layout,draft,columns);
+    renderPreview(container,page,mode,original) {
+      const view = {Board:'board','Shot tracker':'shot-tracker',Overview:'overview',Entries:'history'}[page];
+      if (!view) return false;
+      mountGamePreview(container,original ? game : ui.game,view,mode);
+      return true;
+    },
+    async onSave(draft,columns,active) {
+      const updated = model.persist(ui.game.layout,draft,columns,active);
       if (JSON.stringify(updated) === JSON.stringify(ui.game.layout)) return;
       const saved = await commit(next=>{next.layout = updated;},'Layout saved with this game');
       if (!saved) throw new Error(ui.notice || 'The layout could not be saved.');
@@ -290,9 +330,7 @@ function render() {
   root.innerHTML = ui.game ? renderGame() : renderWelcome();
   const message = ui.storageError ? `<div class="toast error" role="alert">${esc(ui.notice)}</div>` : ui.notice ? `<div class="toast" role="status">${esc(ui.notice)}</div>` : '';
   root.insertAdjacentHTML('beforeend', message);
-  if (ui.game) applyStudioLayout(root,ui.game,{
-    mode:ipadOrientation(),activeTeam:ui.activeTeam,section:ui.section
-  });
+  if (ui.game) applyGameLayout(root,ui.game);
 }
 
 function download(filename, content, mime) { const blob = new Blob([content], { type: mime }), url = URL.createObjectURL(blob), anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; document.body.append(anchor); anchor.click(); anchor.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); }

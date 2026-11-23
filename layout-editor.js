@@ -141,10 +141,11 @@ const editorMarkup = `
   #courtside-layout-demo .cs-footer {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;}
   #courtside-layout-demo .cs-exit {margin-left:auto;padding:6px 10px;min-height:38px;flex-shrink:0;}
   #courtside-layout-demo .cs-grid-empty {grid-column:1/-1;grid-row:1;padding:12px;color:var(--soft);}
+  #courtside-layout-demo .cs-rendered-page {display:block;margin-top:8px;background:#f3f6f8;color:#102b4c;font-family:Arial,Helvetica,sans-serif;border-radius:8px;}
 </style>
 `;
 
-export function mountLayoutEditor(host, {pages,getDefault,onSave,onExit,gameName,teamNames,initialScope = 'Board layout',initialOrientation}) {
+export function mountLayoutEditor(host, {pages,getDefault,onSave,onExit,renderPreview,gameName,teamNames,initialScope = 'Board layout',initialOrientation}) {
   const shadow = host.attachShadow({mode:'open'});
   shadow.innerHTML = editorMarkup;
   const demo = shadow.getElementById('courtside-layout-demo');
@@ -305,9 +306,12 @@ export function mountLayoutEditor(host, {pages,getDefault,onSave,onExit,gameName
   }
   function showSavedPreview() {
     const surface = get('.cs-game-preview');
+    const navigation = previewGrid('Game header','Header buttons');
+    surface.replaceChildren(navigation);
+    if (renderPreview?.(surface,previewPage,orientation,showOriginal)) return;
     const currentPage = pages[previewPage];
     const title = previewPage === 'Board' ? gameName : previewPage === 'Shot tracker' ? 'Shot tracker · ' + previewTeam : previewPage;
-    surface.replaceChildren(previewGrid('Game header','Header buttons'),plus('h3','cs-game-heading',title));
+    surface.append(plus('h3','cs-game-heading',title));
     if (currentPage) {
       surface.append(previewGrid(previewPage,previewPage === 'Board' ? 'Board layout' : Object.keys(currentPage)[0]));
     }
@@ -627,7 +631,7 @@ export function mountLayoutEditor(host, {pages,getDefault,onSave,onExit,gameName
     try {
       const layoutsToSave = clone(draft);
       const columnsToSave = clone(draftColumns);
-      await onSave(layoutsToSave,columnsToSave);
+      await onSave(layoutsToSave,columnsToSave,{page,scope,mode:orientation});
       saved = layoutsToSave;
       savedColumns = columnsToSave;
       preview = true;
