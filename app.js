@@ -1,5 +1,5 @@
 import { mountLayoutEditor } from './layout-editor.js?v=23';
-import { createLayoutModel, applyStudioLayout, ipadOrientation } from './layout-model.js?v=23';
+import { createLayoutModel, applyStudioLayout, ipadOrientation } from './layout-model.js?v=25';
 import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, OUTCOME_GROUP_LABELS, outcomeGroup, gameOutcomes, getOutcome, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=16';
 import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=18';
 import { buildOverview } from './overview.js?v=16';

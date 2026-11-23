@@ -367,7 +367,7 @@ export function applyStudioLayout(root,model,{mode,activeTeam,section,tabletLayo
     for (const [id,[,,width]] of ordered) {
       const button = get('[data-action="' + id + '"]',header);
       if (!button) continue;
-      if (width > 1) button.style.flexGrow = String(width-1);
+      if (width > 1) button.style.flexGrow = String(width);
       header.append(button);
     }
   }
