@@ -1,5 +1,5 @@
-import { mountLayoutEditor } from './layout-editor.js?v=23';
-import { createLayoutModel, applyStudioLayout, ipadOrientation } from './layout-model.js?v=25';
+import { mountLayoutEditor } from './layout-editor.js?v=27';
+import { createLayoutModel, applyStudioLayout, ipadOrientation } from './layout-model.js?v=27';
 import { OUTCOMES, DEFAULT_SUCCESS, DIRECT_ACTIONS, MAX_SECTIONS, OUTCOME_GROUP_LABELS, outcomeGroup, gameOutcomes, getOutcome, newGame, normalizeGame, addEvent, activeEvents, totals, canAdjust, eventLabel, teamFouls } from './core.js?v=16';
 import { parseSetupCSV, applySetup, setupCSV } from './setup.js?v=18';
 import { buildOverview } from './overview.js?v=16';
@@ -27,7 +27,7 @@ function sizeClass(game,key,itemId) { return ` cell-${cellSize(game,key,itemId)}
 function columnsForDevice(device) { return device==='phone'?4:device==='tablet'?6:12; }
 function columnsForSurface(surface,device) { if(surface==='results')return 2;if(surface==='shots')return device==='phone'?2:3;return surface==='team-metrics'?(device==='phone'?4:device==='tablet'?8:12):columnsForDevice(device); }
 function surfaceForLayoutKey(key) { return key==='shot-tracker'?'shots':key.startsWith('sections:')?'board-sections':key.startsWith('roster:')?'team-roster':key.startsWith('board:')?'board-categories':key.startsWith('plays:')?'board-plays':key.startsWith('team-metrics:')?'team-metrics':key; }
-function layoutColumns(layout,key,device) { const surface=surfaceForLayoutKey(key),fallback=columnsForSurface(surface,device),saved=Number(layout?.[key]?.columns?.[device]);return Number.isInteger(saved)&&saved>=2&&saved<=12?saved:fallback; }
+function layoutColumns(layout,key,device) { const surface=surfaceForLayoutKey(key),fallback=columnsForSurface(surface,device),saved=Number(layout?.[key]?.columns?.[device]);return Number.isInteger(saved)&&saved>=1&&saved<=12?saved:fallback; }
 function currentLayoutDevice() { return window.innerWidth<=700?'phone':window.innerWidth<=1000?'tablet':'desktop'; }
 function defaultPlacement(surface,index,total,device,colsOverride) {
   const cols=colsOverride||columnsForSurface(surface,device),half=Math.max(1,Math.floor(cols/2));

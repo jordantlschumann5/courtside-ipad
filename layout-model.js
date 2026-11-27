@@ -259,7 +259,7 @@ function hasLegacyPlacement(entry,device) {
 }
 function readGrid(entry,device,fallback) {
   const columns = Number(entry?.columns?.[device] ?? fallback);
-  if (!Number.isInteger(columns) || columns < 2 || columns > 12) return null;
+  if (!Number.isInteger(columns) || columns < 1 || columns > 12) return null;
   const placements = Object.fromEntries(Object.entries(entry.placements?.[device] || {}).filter(([,box])=>
     box && [box.x,box.y,box.w,box.h].every(value=>Number.isInteger(value) && value>0) &&
     box.x+box.w-1<=columns && box.y+box.h<=97));

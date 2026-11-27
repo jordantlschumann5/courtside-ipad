@@ -174,7 +174,7 @@ export function mountLayoutEditor(host, {pages,getDefault,onSave,onExit,renderPr
   const history = [];
   const elements = new Map();
   const records = () => pages[page]?.[scope] || [];
-  const minColumns = () => page === 'Game header' ? records().length : 2;
+  const minColumns = () => page === 'Game header' ? records().length : 1;
   const selectedTile = () => records().find(item => item.id === selected);
   function nestedScope(item) {
     const destination = item?.insidePage || page;

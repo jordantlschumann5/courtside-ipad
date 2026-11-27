@@ -1,10 +1,10 @@
 const CACHE_PREFIX = 'courtside-shell-';
-const CACHE = CACHE_PREFIX + 'v26';
+const CACHE = CACHE_PREFIX + 'v27';
 const APP_ROOT = new URL('./',self.location.href);
 const INDEX = new URL('index.html',APP_ROOT);
 const ASSETS = [
-  './index.html', './styles.css?v=26', './app.js?v=26', './layout-editor.js?v=23',
-  './layout-model.js?v=25', './core.js?v=16', './setup.js?v=18', './overview.js?v=16',
+  './index.html', './styles.css?v=27', './app.js?v=27', './layout-editor.js?v=27',
+  './layout-model.js?v=27', './core.js?v=16', './setup.js?v=18', './overview.js?v=16',
   './storage.js?v=16', './calculator.js?v=16', './manifest.webmanifest', './icon.svg'
 ];
 self.addEventListener('install', event => {
